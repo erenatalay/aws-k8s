@@ -1,0 +1,180 @@
+import { I18nService } from 'src/i18n/i18n.service';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+
+import { ProductsService } from './products.service';
+import { JwksGuard } from '../jwks/jwks.guard';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  ProductResponseDto,
+  QueryProductDto,
+} from './dto';
+
+@Controller({ path: 'products', version: '1' })
+@ApiTags('Products')
+export class ProductsController {
+  private readonly logger = new Logger(ProductsController.name);
+
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly i18nService: I18nService,
+  ) {}
+
+  @Post()
+  @UseGuards(JwksGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new product (Protected by JWT)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product created successfully',
+    type: ProductResponseDto,
+  })
+  @ApiBody({ type: CreateProductDto })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @Request() req: any,
+  ): Promise<ProductResponseDto> {
+    this.logger.log(`POST /products - Creating new product by user: ${req.user.userId || req.user.sub}`);
+    
+    // Add user ID from JWT token to the DTO
+    const productData = {
+      ...createProductDto,
+      userId: req.user.userId || req.user.sub, // JWT sub claim or custom userId
+    };
+    
+    return await this.productsService.create(productData);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all products with pagination and filters' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully',
+    type: [ProductResponseDto],
+  })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  async findAll(@Query() query: QueryProductDto) {
+    this.logger.log('GET /products - Retrieving products');
+    return await this.productsService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a product by ID' })
+  @ApiParam({ name: 'id', description: 'Product ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product retrieved successfully',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string): Promise<ProductResponseDto> {
+    this.logger.log(`GET /products/${id} - Retrieving product`);
+    return await this.productsService.findOne(id);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get products by user ID' })
+  @ApiParam({ name: 'userId', description: 'User ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully',
+    type: [ProductResponseDto],
+  })
+  @HttpCode(HttpStatus.OK)
+  async findByUserId(
+    @Param('userId') userId: string,
+  ): Promise<ProductResponseDto[]> {
+    this.logger.log(`GET /products/user/${userId} - Retrieving user products`);
+    return await this.productsService.findByUserId(userId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiParam({ name: 'id', description: 'Product ID' })
+  @ApiBody({ type: UpdateProductDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Product updated successfully',
+    type: ProductResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ): Promise<ProductResponseDto> {
+    this.logger.log(`PUT /products/${id} - Updating product`);
+    return await this.productsService.update(id, updateProductDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product' })
+  @ApiParam({ name: 'id', description: 'Product ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product deleted successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  @HttpCode(HttpStatus.OK)
+  async remove(@Param('id') id: string): Promise<{ message: string }> {
+    this.logger.log(`DELETE /products/${id} - Deleting product`);
+    return await this.productsService.remove(id);
+  }
+
+  @Get('user/:userId/count')
+  @ApiOperation({ summary: 'Get product count by user' })
+  @ApiParam({ name: 'userId', description: 'User ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product count retrieved successfully',
+  })
+  @HttpCode(HttpStatus.OK)
+  async getProductCountByUser(
+    @Param('userId') userId: string,
+  ): Promise<{ count: number }> {
+    this.logger.log(
+      `GET /products/user/${userId}/count - Getting product count`,
+    );
+    const count = await this.productsService.getProductCountByUser(userId);
+    return { count };
+  }
+}

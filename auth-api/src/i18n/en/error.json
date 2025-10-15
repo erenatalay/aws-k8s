@@ -1,0 +1,22 @@
+{
+  "userNotFound.user": "No user found.",
+  "userNotFound.email": "No user found with this email address.",
+  "userNotFound.invalid.password": "Invalid password.",
+  "user.aldready.exist": "User already exist.",
+  "user.password.not.match": "New password and confirm password don't match.",
+  "user.password.string": "Password must be a string",
+  "user.password.required": "Password is required",
+  "user.password.minlength": "Password must be at least 6 characters long",
+  "user.email.required": "Email address is required",
+  "user.email.format": "Please enter a valid email address",
+  "user.email.minlength": "Email address must be at least 2 characters long",
+  "token.invalid": "Invalid token",
+  "config.jwt_secret": "JWT_SECRET is not defined in environment variables",
+  "auth.unauthorized": "Unauthorized access",
+  "internal": "An error occurred, please try again later",
+  "validation.match": "Fields do not match",
+  "invalid.activation.code": "Invalid activation code",
+  "user.account.not.activated": "Your account is not activated. Please check your email for activation code.",
+  "invalid.reset.code": "Invalid reset code",
+  "reset.code.expired": "Reset code has expired"
+}

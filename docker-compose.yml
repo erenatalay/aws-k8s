@@ -1,0 +1,143 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for Auth API
+  auth-postgres:
+    image: postgres:17.0
+    container_name: auth-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+      POSTGRES_DB: auth_db
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL database for Product API
+  product-postgres:
+    image: postgres:17.0
+    container_name: product-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: product_user
+      POSTGRES_PASSWORD: product_password
+      POSTGRES_DB: product_db
+    volumes:
+      - product_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U product_user -d product_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Auth API Service
+  auth-api:
+    build:
+      context: ./auth-api
+      dockerfile: Dockerfile
+    container_name: auth-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://auth_user:auth_password@auth-postgres:5432/auth_db?schema=public
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672/
+      JWT_SECRET: your-super-secret-jwt-key-here-change-in-production
+      JWT_EXPIRES_IN: 1h
+      JWT_ISSUER: auth-service
+      JWT_AUDIENCE: api-services
+    networks:
+      - app-network
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Product API Service
+  product-api:
+    build:
+      context: ./product-api
+      dockerfile: Dockerfile
+    container_name: product-api
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://product_user:product_password@product-postgres:5432/product_db?schema=public
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672/
+      AUTH_SERVICE_URL: http://auth-api:3000
+      JWT_ISSUER: auth-service
+      JWT_AUDIENCE: api-services
+    networks:
+      - app-network
+    depends_on:
+      product-postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Ecommerce React App (Next.js)
+  ecommerce-app:
+    build:
+      context: ./ecommerce
+      dockerfile: Dockerfile
+    container_name: ecommerce-app
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      NEXT_PUBLIC_AUTH_API_URL: http://localhost:3000
+      NEXT_PUBLIC_PRODUCT_API_URL: http://localhost:3001
+    networks:
+      - app-network
+    depends_on:
+      - auth-api
+      - product-api
+    restart: unless-stopped
+
+volumes:
+  auth_postgres_data:
+  product_postgres_data:
+  rabbitmq_data:
+
+networks:
+  app-network:
+    driver: bridge

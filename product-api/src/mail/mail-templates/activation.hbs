@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=">
+    <title>{{title}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .code-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .code {
+            display: inline-block;
+            padding: 15px 25px;
+            background-color: #00838f;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 4px;
+        }
+        
+        .header {
+            background-color: #eeeeee;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>{{app_name}}</h1>
+    </div>
+    
+    <div class="content">
+        <p>{{text1}}</p>
+        <p>{{text2}} <strong>{{app_name}}</strong>.</p>
+        <p>{{text3}}</p>
+        
+        <p style="text-align: center;">Veya aşağıdaki aktivasyon kodunu kullanabilirsiniz:</p>
+        
+        <div class="code-container">
+            <div class="code">{{hash}}</div>
+        </div>
+        
+        <p style="text-align: center;">Bu e-posta otomatik olarak gönderilmiştir, lütfen yanıtlamayınız.</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; {{app_name}} - Tüm hakları saklıdır.</p>
+    </div>
+</body>
+
+</html>
