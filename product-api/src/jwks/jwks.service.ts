@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
 import * as jwkToPem from 'jwk-to-pem';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface JwkKey {
   kty: string;
@@ -42,9 +42,12 @@ export class JwksService {
   }
 
   async getPublicKey(kid: string): Promise<string> {
-    // Check cache first (5 minute cache)
     if (this.jwksCache.has(kid) && Date.now() < this.cacheExpiry) {
-      return this.jwksCache.get(kid);
+      const cachedPem = this.jwksCache.get(kid);
+      if (!cachedPem) {
+        throw new Error(`Cached PEM not found for kid: ${kid}`);
+      }
+      return cachedPem;
     }
 
     const jwks = await this.getJwks();

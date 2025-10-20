@@ -13,7 +13,7 @@ import { RabbitmqService } from './rabbitmq.service';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('RABBITMQ_URL')],
+            urls: [configService.get<string>('RABBITMQ_URL')].filter((url): url is string => typeof url === 'string'),
             queue: 'product_queue',
             queueOptions: {
               durable: true,

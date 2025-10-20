@@ -12,11 +12,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.contoller';
 import { HealthModule } from './health-check/healthCheck.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { SwaggerModule } from './swagger/swagger.module';
 import { JwksModule } from './jwks/jwks.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
-import { ProductConsumerController } from './consumers/product-consumer.controller';
+import { SwaggerModule } from './swagger/swagger.module';
 
 @Module({
   imports: [
@@ -50,7 +49,7 @@ import { ProductConsumerController } from './consumers/product-consumer.controll
       isGlobal: true,
     })
   ],
-  controllers: [AppController, ProductConsumerController],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}
