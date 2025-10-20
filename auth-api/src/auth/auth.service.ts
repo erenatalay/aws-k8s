@@ -10,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { I18nService } from '../i18n/i18n.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { TokenService } from '../token/token.service';
 import { HashingService } from '../utils/hashing/hashing.module';
 import { JwksService } from '../jwks/jwks.service';
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
@@ -28,7 +27,6 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly hashingService: HashingService,
-    private readonly tokenService: TokenService,
     private readonly i18nService: I18nService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
@@ -224,7 +222,13 @@ export class AuthService {
     };
 
     const accessToken = this.jwksService.signToken(tokenPayload);
-    const refreshToken = await this.tokenService.createRefreshToken(user);
+    
+    // Refresh token için aynı payload kullan ama daha uzun expiry
+    const refreshTokenPayload = {
+      ...tokenPayload,
+      type: 'refresh',
+    };
+    const refreshToken = this.jwksService.signToken(refreshTokenPayload);
 
     // Login event'ini RabbitMQ'ya gönder
     this.rabbitmqService.emit('user.login', {
