@@ -6,6 +6,7 @@ import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/error/http-exception-filter';
@@ -34,9 +35,9 @@ async function bootstrap() {
   app.use(hpp());
   app.use(compression());
   app.use(cookieParser());
-  
+
   const i18nService = app.get(I18nService);
-  
+
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new I18nValidationPipe(i18nService));
 
@@ -53,11 +54,31 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Microservice'i başlat
+  await app.startAllMicroservices();
+  Logger.log('🐰 RabbitMQ Microservice is listening on: auth_queue');
+
   await app.listen(
     configService.get<number>('API_PORT', { infer: true }),
     '0.0.0.0',
   );
 
-  Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
+  Logger.log(`� Application is running on: http://localhost:${PORT}/`);
+
+  // RabbitMQ Microservice'i ayrı olarak başlat
+  const microservice =
+    await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+      transport: Transport.RMQ,
+      options: {
+        urls: [configService.get<string>('RABBITMQ_URL')!],
+        queue: 'auth_queue',
+        queueOptions: {
+          durable: true,
+        },
+      },
+    });
+
+  await microservice.listen();
+  Logger.log('� RabbitMQ Microservice is listening on: auth_queue');
 }
 void bootstrap();

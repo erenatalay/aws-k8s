@@ -4,10 +4,13 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HashingModule } from 'src/utils/hashing/hashing.service';
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwksModule } from '../jwks/jwks.module';
+import { AuthMicroserviceController } from './auth-microservice.controller';
+import { TokenModule } from '../token/token.module';
 import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
 
 @Module({
@@ -16,10 +19,20 @@ import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
     PrismaModule,
     I18nHelperModule,
     MailModule,
-    JwksModule,
+    TokenModule,
     RabbitmqModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '7d') as any,
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthMicroserviceController],
   providers: [
     AuthService, 
     PrismaService,

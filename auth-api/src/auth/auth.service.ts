@@ -11,7 +11,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashingService } from '../utils/hashing/hashing.module';
-import { JwksService } from '../jwks/jwks.service';
+import { TokenService } from '../token/token.service';
 import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
 import { AuthProviderEnum } from './auth.types';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -30,7 +30,7 @@ export class AuthService {
     private readonly i18nService: I18nService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-    private readonly jwksService: JwksService,
+    private readonly tokenService: TokenService,
     private readonly rabbitmqService: RabbitmqService,
   ) {}
 
@@ -211,24 +211,8 @@ export class AuthService {
       });
 
     // JWT token oluştur
-    const tokenPayload = {
-      sub: user.id, // Standard JWT subject claim
-      userId: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      role: 'user', // Default role, gerekirse database'den alınabilir
-      iat: Math.floor(Date.now() / 1000),
-    };
-
-    const accessToken = this.jwksService.signToken(tokenPayload);
-    
-    // Refresh token için aynı payload kullan ama daha uzun expiry
-    const refreshTokenPayload = {
-      ...tokenPayload,
-      type: 'refresh',
-    };
-    const refreshToken = this.jwksService.signToken(refreshTokenPayload);
+    const accessToken = await this.tokenService.createAccessToken(user);
+    const refreshToken = await this.tokenService.createRefreshToken(user);
 
     // Login event'ini RabbitMQ'ya gönder
     this.rabbitmqService.emit('user.login', {

@@ -27,7 +27,7 @@ import {
 } from '@nestjs/swagger';
 
 import { ProductsService } from './products.service';
-import { JwksGuard } from '../jwks/jwks.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -46,9 +46,9 @@ export class ProductsController {
   ) {}
 
   @Post()
-  @UseGuards(JwksGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new product (Protected by JWT)' })
+  @ApiOperation({ summary: 'Create a new product (Protected by JWT via RabbitMQ)' })
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
@@ -61,12 +61,12 @@ export class ProductsController {
     @Body() createProductDto: CreateProductDto,
     @Request() req: any,
   ): Promise<ProductResponseDto> {
-    this.logger.log(`POST /products - Creating new product by user: ${req.user.userId || req.user.sub}`);
+    this.logger.log(`POST /products - Creating new product by user: ${req.user.userId}`);
     
-    // Add user ID from JWT token to the DTO
+    // Add user ID from JWT token to the DTO (Auth API'den gelen payload)
     const productData = {
       ...createProductDto,
-      userId: req.user.userId || req.user.sub, // JWT sub claim or custom userId
+      userId: req.user.userId, // RabbitMQ'dan gelen validated user ID
     };
     
     return await this.productsService.create(productData);

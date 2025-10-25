@@ -14,6 +14,7 @@ import { AppController } from './app.contoller';
 import { HealthModule } from './health-check/healthCheck.module';
 import { JwksModule } from './jwks/jwks.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProductsModule } from './products/products.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { SwaggerModule } from './swagger/swagger.module';
 
@@ -44,6 +45,7 @@ import { SwaggerModule } from './swagger/swagger.module';
     SwaggerModule,
     HealthModule,
     JwksModule,
+    ProductsModule,
     RabbitmqModule,
     ConfigModule.forRoot({
       isGlobal: true,

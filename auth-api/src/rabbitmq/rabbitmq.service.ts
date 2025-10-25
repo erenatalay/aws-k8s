@@ -1,6 +1,6 @@
+import { Observable } from 'rxjs';
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
 
 export interface MessageEvent {
   pattern: string;
@@ -18,8 +18,13 @@ export class RabbitmqService {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.client.connect();
-    this.logger.log('Connected to RabbitMQ');
+    try {
+      await this.client.connect();
+      this.logger.log('Connected to RabbitMQ');
+    } catch (error) {
+      this.logger.error('Failed to connect to RabbitMQ', error);
+      this.logger.warn('Application will continue without RabbitMQ connection');
+    }
   }
 
   emit(pattern: string, data: any): Observable<any> {
@@ -31,7 +36,12 @@ export class RabbitmqService {
     };
 
     this.logger.log(`Emitting message: ${pattern}`, data);
-    return this.client.emit(pattern, message);
+    try {
+      return this.client.emit(pattern, message);
+    } catch (error) {
+      this.logger.error(`Failed to emit message: ${pattern}`, error);
+      throw error;
+    }
   }
 
   send(pattern: string, data: any): Observable<any> {
@@ -43,7 +53,12 @@ export class RabbitmqService {
     };
 
     this.logger.log(`Sending message: ${pattern}`, data);
-    return this.client.send(pattern, message);
+    try {
+      return this.client.send(pattern, message);
+    } catch (error) {
+      this.logger.error(`Failed to send message: ${pattern}`, error);
+      throw error;
+    }
   }
 
   async close(): Promise<void> {

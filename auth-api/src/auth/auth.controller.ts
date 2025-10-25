@@ -1,4 +1,3 @@
-import { Response } from 'express';
 import { I18nService } from 'src/i18n/i18n.service';
 import {
   Controller,
@@ -12,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
+import { TokenService } from '../token/token.service';
 import { AuthService } from './auth.service';
-import { JwksService } from '../jwks/jwks.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AuthLoginRequestDto } from './dto/login-request-auth.dto';
 import { AuthRegisterRequestDto } from './dto/register-request-auth.dto';
@@ -28,7 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly i18nService: I18nService,
-    private readonly jwksService: JwksService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @Post('register')
@@ -113,45 +112,6 @@ export class AuthController {
     await this.authService.resetPassword(resetPasswordDto);
     return {
       message: this.i18nService.translate('common.auth.reset.password.success'),
-    };
-  }
-
-  @Post('create-token')
-  @ApiOperation({ summary: 'Create JWT token for testing purposes' })
-  @ApiResponse({
-    status: 200,
-    description: 'Token created successfully',
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        userId: { type: 'string', example: '123' },
-        email: { type: 'string', example: 'test@example.com' },
-        role: { type: 'string', example: 'user' },
-      },
-    },
-  })
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @HttpCode(HttpStatus.OK)
-  async createToken(@Body() payload: { userId: string; email: string; role?: string }) {
-    this.logger.log('POST /auth/create-token - Creating test token');
-    
-    const tokenPayload = {
-      sub: payload.userId, // Standard JWT subject claim
-      userId: payload.userId,
-      email: payload.email,
-      role: payload.role || 'user',
-      iat: Math.floor(Date.now() / 1000),
-    };
-
-    const token = this.jwksService.signToken(tokenPayload);
-    
-    return {
-      access_token: token,
-      token_type: 'Bearer',
-      expires_in: 3600,
-      user: tokenPayload,
     };
   }
 }

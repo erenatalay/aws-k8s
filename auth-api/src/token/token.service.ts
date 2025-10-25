@@ -34,7 +34,7 @@ export class TokenService {
     );
     return this.jwtService.sign(
       { email: user.email, id: user.id, type: 'passwordReset' },
-      { secret, expiresIn: passwordResetExpiresIn },
+      { secret, expiresIn: passwordResetExpiresIn as any },
     );
   }
 
@@ -44,7 +44,7 @@ export class TokenService {
     };
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
+      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') as any,
     });
   }
 
@@ -52,7 +52,7 @@ export class TokenService {
     const payload = { email: user.email };
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as any,
     });
   }
 

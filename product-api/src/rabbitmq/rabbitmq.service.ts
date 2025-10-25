@@ -18,8 +18,13 @@ export class RabbitmqService {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.client.connect();
-    this.logger.log('Connected to RabbitMQ');
+    try {
+      await this.client.connect();
+      this.logger.log('Connected to RabbitMQ');
+    } catch (error) {
+      this.logger.error('Failed to connect to RabbitMQ', error);
+      this.logger.warn('Application will continue without RabbitMQ connection');
+    }
   }
 
   emit(pattern: string, data: any): Observable<any> {

@@ -6,6 +6,7 @@ import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/error/http-exception-filter';
@@ -52,6 +53,22 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  // RabbitMQ Microservice'i bağla
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [configService.get<string>('RABBITMQ_URL')!],
+      queue: 'product_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  // Microservice'i başlat
+  await app.startAllMicroservices();
+  Logger.log('🐰 RabbitMQ Microservice is listening on: product_queue');
 
   await app.listen(
     configService.get<number>('API_PORT', { infer: true }),
