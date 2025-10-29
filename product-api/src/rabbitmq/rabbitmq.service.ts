@@ -28,27 +28,15 @@ export class RabbitmqService {
   }
 
   emit(pattern: string, data: any): Observable<any> {
-    const message: MessageEvent = {
-      pattern,
-      data,
-      timestamp: new Date(),
-      source: 'product-service',
-    };
-
-    this.logger.log(`Emitting message: ${pattern}`, data);
-    return this.client.emit(pattern, message);
+    this.logger.log(`Emitting message: ${pattern}`, JSON.stringify(data));
+    // Direkt data gönder, wrapper kullanma
+    return this.client.emit(pattern, data);
   }
 
   send(pattern: string, data: any): Observable<any> {
-    const message: MessageEvent = {
-      pattern,
-      data,
-      timestamp: new Date(),
-      source: 'product-service',
-    };
-
-    this.logger.log(`Sending message: ${pattern}`, data);
-    return this.client.send(pattern, message);
+    this.logger.log(`Sending message: ${pattern}`, JSON.stringify(data));
+    // Direkt data gönder, wrapper kullanma
+    return this.client.send(pattern, data);
   }
 
   async close(): Promise<void> {

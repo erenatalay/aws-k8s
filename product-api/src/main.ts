@@ -43,7 +43,6 @@ async function bootstrap() {
 
   const swaggerService = app.get(SwaggerService);
   swaggerService.setupSwagger(app);
-  const PORT = configService.get<string>('API_PORT', { infer: true });
 
   app.enableCors({
     origin: [
@@ -54,27 +53,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // RabbitMQ Microservice'i bağla
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [configService.get<string>('RABBITMQ_URL')!],
-      queue: 'product_queue',
-      queueOptions: {
-        durable: true,
-      },
-    },
-  });
+  const PORT = configService.get<number>('API_PORT', { infer: true }) || 3002;
 
-  // Microservice'i başlat
-  await app.startAllMicroservices();
-  Logger.log('🐰 RabbitMQ Microservice is listening on: product_queue');
+  await app.listen(PORT, '0.0.0.0');
 
-  await app.listen(
-    configService.get<number>('API_PORT', { infer: true }),
-    '0.0.0.0',
-  );
-
-  Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
+  Logger.log(`� Application is running on: http://localhost:${PORT}/`);
+  Logger.log(`� Swagger docs available at: http://localhost:${PORT}/api/docs`);
+  Logger.log(`🐰 Connected to RabbitMQ for Auth validation`);
 }
 void bootstrap();

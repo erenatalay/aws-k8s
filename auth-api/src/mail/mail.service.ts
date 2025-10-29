@@ -50,6 +50,7 @@ export class MailService {
         text1: 'Please confirm your email',
         text2: 'Thank you for registering with',
         text3: 'Your activation code is:',
+        hash: mailData.data.hash,
       },
     });
   }

@@ -1,5 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  Min,
+  MaxLength,
+  IsOptional,
+  IsInt,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductDto {
   @ApiProperty({
@@ -30,12 +38,11 @@ export class CreateProductDto {
   @Min(0)
   price: number;
 
-  @ApiProperty({
-    description: 'User ID who created the product',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    required: true,
+  @ApiPropertyOptional({
+    description: 'User ID (automatically set from token)',
+    example: 'user-uuid',
   })
   @IsString()
-  @IsNotEmpty()
-  userId: string;
+  @IsOptional()
+  userId?: string;
 }

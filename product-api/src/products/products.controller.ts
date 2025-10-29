@@ -1,4 +1,3 @@
-import { I18nService } from 'src/i18n/i18n.service';
 import {
   Controller,
   Post,
@@ -14,7 +13,6 @@ import {
   HttpStatus,
   Logger,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,8 +24,10 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
+import { I18nService } from '../i18n/i18n.service';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser, CurrentUserData } from '../auth/decorators/current-user.decorator';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -59,17 +59,14 @@ export class ProductsController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProductDto: CreateProductDto,
-    @Request() req: any,
+    @CurrentUser() user: CurrentUserData,
   ): Promise<ProductResponseDto> {
-    this.logger.log(`POST /products - Creating new product by user: ${req.user.userId}`);
+    this.logger.log(`POST /products - Creating new product by user: ${user.email}`);
     
-    // Add user ID from JWT token to the DTO (Auth API'den gelen payload)
-    const productData = {
-      ...createProductDto,
-      userId: req.user.userId, // RabbitMQ'dan gelen validated user ID
-    };
+    // userId'yi DTO'ya ekle (Auth API'den gelen validated user ID)
+    createProductDto.userId = user.userId;
     
-    return await this.productsService.create(productData);
+    return await this.productsService.create(createProductDto);
   }
 
   @Get()
@@ -121,7 +118,9 @@ export class ProductsController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update a product' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a product (Protected by JWT via RabbitMQ)' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiBody({ type: UpdateProductDto })
   @ApiResponse({
@@ -138,13 +137,16 @@ export class ProductsController {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @CurrentUser() user: CurrentUserData,
   ): Promise<ProductResponseDto> {
-    this.logger.log(`PUT /products/${id} - Updating product`);
+    this.logger.log(`PUT /products/${id} - Updating product by user: ${user.email}`);
     return await this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a product' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a product (Protected by JWT via RabbitMQ)' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiResponse({
     status: 200,
@@ -155,8 +157,11 @@ export class ProductsController {
     description: 'Product not found',
   })
   @HttpCode(HttpStatus.OK)
-  async remove(@Param('id') id: string): Promise<{ message: string }> {
-    this.logger.log(`DELETE /products/${id} - Deleting product`);
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserData,
+  ): Promise<{ message: string }> {
+    this.logger.log(`DELETE /products/${id} - Deleting product by user: ${user.email}`);
     return await this.productsService.remove(id);
   }
 

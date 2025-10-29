@@ -14,7 +14,7 @@ import { RabbitmqService } from './rabbitmq.service';
           transport: Transport.RMQ,
           options: {
             urls: [configService.get<string>('RABBITMQ_URL')].filter((url): url is string => typeof url === 'string'),
-            queue: 'product_queue',
+            queue: 'auth_queue', // Auth API'nin queue'suna mesaj göndermek için
             queueOptions: {
               durable: true,
             },

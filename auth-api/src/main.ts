@@ -43,7 +43,6 @@ async function bootstrap() {
 
   const swaggerService = app.get(SwaggerService);
   swaggerService.setupSwagger(app);
-  const PORT = configService.get<string>('API_PORT', { infer: true });
 
   app.enableCors({
     origin: [
@@ -54,31 +53,27 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Microservice'i başlat
-  await app.startAllMicroservices();
-  Logger.log('🐰 RabbitMQ Microservice is listening on: auth_queue');
-
-  await app.listen(
-    configService.get<number>('API_PORT', { infer: true }),
-    '0.0.0.0',
-  );
-
-  Logger.log(`� Application is running on: http://localhost:${PORT}/`);
-
-  // RabbitMQ Microservice'i ayrı olarak başlat
-  const microservice =
-    await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-      transport: Transport.RMQ,
-      options: {
-        urls: [configService.get<string>('RABBITMQ_URL')!],
-        queue: 'auth_queue',
-        queueOptions: {
-          durable: true,
-        },
+  // RabbitMQ Microservice'i ekle
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [configService.get<string>('RABBITMQ_URL')!],
+      queue: 'auth_queue',
+      queueOptions: {
+        durable: true,
       },
-    });
+    },
+  });
 
-  await microservice.listen();
-  Logger.log('� RabbitMQ Microservice is listening on: auth_queue');
+  // Tüm microservice'leri başlat
+  await app.startAllMicroservices();
+
+  const PORT = configService.get<number>('API_PORT', { infer: true }) || 3001;
+
+  await app.listen(PORT, '0.0.0.0');
+
+  Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
+  Logger.log(`📚 Swagger docs available at: http://localhost:${PORT}/api/docs`);
+  Logger.log('🐰 RabbitMQ Microservice is listening on: auth_queue');
 }
 void bootstrap();

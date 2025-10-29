@@ -19,7 +19,31 @@ export class TokenService {
       const secret = this.configService.get<string>('JWT_SECRET');
       const decoded = await this.jwtService.verify(token, { secret });
 
-      return decoded;
+      // Kullanıcı bilgilerini veritabanından al
+      const user = await this.prismaService.users.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          firstname: true,
+          lastname: true,
+          isActive: true,
+        },
+      });
+
+      if (!user || !user.isActive) {
+        throw new UnauthorizedException({
+          message: this.i18nService.translate('error.user.notFound'),
+        });
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        role: 'user', // Eğer role sisteminiz varsa buradan alabilirsiniz
+      };
     } catch (error) {
       throw new UnauthorizedException({
         message: this.i18nService.translate('error.token.invalid'),

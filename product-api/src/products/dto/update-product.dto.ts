@@ -1,33 +1,48 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, Min, MaxLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsNumber, Min, MaxLength, IsInt } from 'class-validator';
 
 export class UpdateProductDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Product name',
     example: 'iPhone 15 Pro Max',
-    required: false,
   })
   @IsString()
   @IsOptional()
   @MaxLength(255)
   name?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Product description',
     example: 'Updated product description',
-    required: false,
   })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Product price',
     example: 1099.99,
-    required: false,
   })
   @IsNumber()
   @IsOptional()
   @Min(0)
   price?: number;
+
+  @ApiPropertyOptional({
+    description: 'Product category',
+    example: 'Electronics',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  category?: string;
+
+  @ApiPropertyOptional({
+    description: 'Product stock quantity',
+    example: 30,
+  })
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  stock?: number;
 }

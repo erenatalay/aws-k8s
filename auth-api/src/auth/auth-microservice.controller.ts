@@ -11,17 +11,34 @@ export class AuthMicroserviceController {
 
   // RabbitMQ Message Pattern: Token doğrulama
   @MessagePattern('validate_token')
-  async validateToken(data: { token: string }) {
+  async validateToken(data: any) {
     this.logger.log('RabbitMQ: validate_token request received');
+    this.logger.debug('Received data:', JSON.stringify(data));
     
     try {
-      const payload = await this.tokenService.verifyToken(data.token);
+      // Data'nın içinden token'ı al
+      const token = data.token || data.data?.token || data;
+      
+      if (!token) {
+        this.logger.error('No token found in request data');
+        return {
+          valid: false,
+          error: 'No token provided',
+        };
+      }
+
+      this.logger.debug(`Validating token: ${token.substring(0, 20)}...`);
+      const payload = await this.tokenService.verifyToken(token);
+      
+      this.logger.log(`Token validated successfully for user: ${payload.email}`);
       
       return {
         valid: true,
         payload: {
           userId: payload.id,
           email: payload.email,
+          firstname: payload.firstname,
+          lastname: payload.lastname,
           role: payload.role || 'user',
         },
       };

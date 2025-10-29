@@ -27,6 +27,11 @@ export class ProductsService {
     createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {
     try {
+      // userId kontrolü
+      if (!createProductDto.userId) {
+        throw new Error('User ID is required');
+      }
+
       this.logger.log(
         `Creating product: ${createProductDto.name} for user: ${createProductDto.userId}`,
       );
