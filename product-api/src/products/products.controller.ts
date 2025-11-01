@@ -20,20 +20,22 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
-  ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { I18nService } from '../i18n/i18n.service';
-import { ProductsService } from './products.service';
+import {
+  CurrentUser,
+  CurrentUserData,
+} from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser, CurrentUserData } from '../auth/decorators/current-user.decorator';
+import { I18nService } from '../i18n/i18n.service';
 import {
   CreateProductDto,
   UpdateProductDto,
   ProductResponseDto,
   QueryProductDto,
 } from './dto';
+import { ProductsService } from './products.service';
 
 @Controller({ path: 'products', version: '1' })
 @ApiTags('Products')
@@ -48,7 +50,9 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new product (Protected by JWT via RabbitMQ)' })
+  @ApiOperation({
+    summary: 'Create a new product (Protected by JWT via RabbitMQ)',
+  })
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
@@ -61,15 +65,19 @@ export class ProductsController {
     @Body() createProductDto: CreateProductDto,
     @CurrentUser() user: CurrentUserData,
   ): Promise<ProductResponseDto> {
-    this.logger.log(`POST /products - Creating new product by user: ${user.email}`);
-    
+    this.logger.log(
+      `POST /products - Creating new product by user: ${user.email}`,
+    );
+
     // userId'yi DTO'ya ekle (Auth API'den gelen validated user ID)
     createProductDto.userId = user.userId;
-    
+
     return await this.productsService.create(createProductDto);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all products with pagination and filters' })
   @ApiResponse({
     status: 200,
@@ -84,6 +92,7 @@ export class ProductsController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiResponse({
@@ -139,7 +148,9 @@ export class ProductsController {
     @Body() updateProductDto: UpdateProductDto,
     @CurrentUser() user: CurrentUserData,
   ): Promise<ProductResponseDto> {
-    this.logger.log(`PUT /products/${id} - Updating product by user: ${user.email}`);
+    this.logger.log(
+      `PUT /products/${id} - Updating product by user: ${user.email}`,
+    );
     return await this.productsService.update(id, updateProductDto);
   }
 
@@ -161,25 +172,9 @@ export class ProductsController {
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserData,
   ): Promise<{ message: string }> {
-    this.logger.log(`DELETE /products/${id} - Deleting product by user: ${user.email}`);
-    return await this.productsService.remove(id);
-  }
-
-  @Get('user/:userId/count')
-  @ApiOperation({ summary: 'Get product count by user' })
-  @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Product count retrieved successfully',
-  })
-  @HttpCode(HttpStatus.OK)
-  async getProductCountByUser(
-    @Param('userId') userId: string,
-  ): Promise<{ count: number }> {
     this.logger.log(
-      `GET /products/user/${userId}/count - Getting product count`,
+      `DELETE /products/${id} - Deleting product by user: ${user.email}`,
     );
-    const count = await this.productsService.getProductCountByUser(userId);
-    return { count };
+    return await this.productsService.remove(id);
   }
 }

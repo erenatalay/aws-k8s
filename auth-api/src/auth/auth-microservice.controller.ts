@@ -9,14 +9,10 @@ export class AuthMicroserviceController {
 
   constructor(private readonly tokenService: TokenService) {}
 
-  // RabbitMQ Message Pattern: Token doğrulama
   @MessagePattern('validate_token')
   async validateToken(data: any) {
-    this.logger.log('RabbitMQ: validate_token request received');
-    this.logger.debug('Received data:', JSON.stringify(data));
     
     try {
-      // Data'nın içinden token'ı al
       const token = data.token || data.data?.token || data;
       
       if (!token) {
@@ -29,8 +25,6 @@ export class AuthMicroserviceController {
 
       this.logger.debug(`Validating token: ${token.substring(0, 20)}...`);
       const payload = await this.tokenService.verifyToken(token);
-      
-      this.logger.log(`Token validated successfully for user: ${payload.email}`);
       
       return {
         valid: true,

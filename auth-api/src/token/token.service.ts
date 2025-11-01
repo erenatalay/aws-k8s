@@ -19,7 +19,6 @@ export class TokenService {
       const secret = this.configService.get<string>('JWT_SECRET');
       const decoded = await this.jwtService.verify(token, { secret });
 
-      // Kullanıcı bilgilerini veritabanından al
       const user = await this.prismaService.users.findUnique({
         where: { id: decoded.id },
         select: {
