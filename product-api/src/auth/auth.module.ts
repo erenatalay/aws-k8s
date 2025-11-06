@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
-  imports: [RabbitmqModule],
+  imports: [KafkaModule],
   providers: [JwtAuthGuard],
   exports: [JwtAuthGuard],
 })

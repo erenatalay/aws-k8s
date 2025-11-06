@@ -53,12 +53,30 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Kafka Microservice bağlantısı (product events için)
+  const kafkaBrokers = (configService.get<string>('KAFKA_BROKERS') || 'localhost:19092,localhost:19093').split(',');
+  
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'product-service',
+        brokers: kafkaBrokers,
+      },
+      consumer: {
+        groupId: 'product-consumer-group',
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
+
   const PORT = configService.get<number>('API_PORT', { infer: true }) || 3002;
 
   await app.listen(PORT, '0.0.0.0');
 
-  Logger.log(`� Application is running on: http://localhost:${PORT}/`);
-  Logger.log(`� Swagger docs available at: http://localhost:${PORT}/api/docs`);
-  Logger.log(`🐰 Connected to RabbitMQ for Auth validation`);
+  Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
+  Logger.log(`📚 Swagger docs available at: http://localhost:${PORT}/api/docs`);
+  Logger.log(`⚡ Kafka connected to: ${kafkaBrokers.join(', ')} for Auth validation & Product events`);
 }
 void bootstrap();

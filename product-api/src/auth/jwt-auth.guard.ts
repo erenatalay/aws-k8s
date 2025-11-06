@@ -7,13 +7,13 @@ import {
   Logger,
 } from '@nestjs/common';
 
-import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   private readonly logger = new Logger(JwtAuthGuard.name);
 
-  constructor(private readonly rabbitmqService: RabbitmqService) {}
+  constructor(private readonly kafkaService: KafkaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -26,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const result = await firstValueFrom(
-        this.rabbitmqService.send('validate_token', { token }),
+        this.kafkaService.send<{ valid: boolean; payload?: any; error?: string }>('validate_token', { token }),
       );
       if (!result.valid) {
         this.logger.warn('Token validation failed:', result.error);

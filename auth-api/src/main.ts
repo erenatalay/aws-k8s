@@ -53,14 +53,18 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // RabbitMQ Microservice'i ekle
+  // Kafka Microservice'i ekle
+  const kafkaBrokers = (configService.get<string>('KAFKA_BROKERS') || 'localhost:19092,localhost:19093').split(',');
+  
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
+    transport: Transport.KAFKA,
     options: {
-      urls: [configService.get<string>('RABBITMQ_URL')!],
-      queue: 'auth_queue',
-      queueOptions: {
-        durable: true,
+      client: {
+        clientId: 'auth-service',
+        brokers: kafkaBrokers,
+      },
+      consumer: {
+        groupId: 'auth-consumer-group',
       },
     },
   });
@@ -74,6 +78,6 @@ async function bootstrap() {
 
   Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
   Logger.log(`📚 Swagger docs available at: http://localhost:${PORT}/api/docs`);
-  Logger.log('🐰 RabbitMQ Microservice is listening on: auth_queue');
+  Logger.log(`⚡ Kafka Microservice connected to: ${kafkaBrokers.join(', ')}`);
 }
 void bootstrap();

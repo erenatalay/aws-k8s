@@ -10,8 +10,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthMicroserviceController } from './auth-microservice.controller';
+import { KafkaModule } from '../kafka/kafka.module';
 import { TokenModule } from '../token/token.module';
-import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
     I18nHelperModule,
     MailModule,
     TokenModule,
-    RabbitmqModule,
+    KafkaModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

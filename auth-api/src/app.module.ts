@@ -13,8 +13,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.contoller';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health-check/healthCheck.module';
+import { KafkaModule } from './kafka/kafka.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { SwaggerModule } from './swagger/swagger.module';
 import { UsersModule } from './users/users.module';
 
@@ -46,7 +46,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     SwaggerModule,
     HealthModule,
-    RabbitmqModule,
+    KafkaModule,
     ConfigModule.forRoot({
       isGlobal: true,
     })

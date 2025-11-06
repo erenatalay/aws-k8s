@@ -8,11 +8,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 
 import { I18nService } from '../i18n/i18n.service';
+import { KafkaService } from '../kafka/kafka.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashingService } from '../utils/hashing/hashing.module';
 import { TokenService } from '../token/token.service';
-import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
 import { AuthProviderEnum } from './auth.types';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AuthLoginRequestDto } from './dto/login-request-auth.dto';
@@ -31,7 +31,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     private readonly tokenService: TokenService,
-    private readonly rabbitmqService: RabbitmqService,
+    private readonly kafkaService: KafkaService,
   ) {}
 
   private generateActivationCode(): string {
@@ -106,8 +106,8 @@ export class AuthService {
       }
     });
 
-    // Register event'ini RabbitMQ'ya gönder
-    this.rabbitmqService.emit('user.registered', {
+    // Register event'ini Kafka'ya gönder
+    await this.kafkaService.emit('user.registered', {
       userId: user.id,
       email: user.email,
       firstname: user.firstname,
@@ -214,8 +214,8 @@ export class AuthService {
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
-    // Login event'ini RabbitMQ'ya gönder
-    this.rabbitmqService.emit('user.login', {
+    // Login event'ini Kafka'ya gönder
+    await this.kafkaService.emit('user.login', {
       userId: user.id,
       email: user.email,
       loginTime: new Date(),

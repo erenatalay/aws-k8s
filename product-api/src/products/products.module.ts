@@ -7,14 +7,14 @@ import { ProductsController } from './products.controller';
 import { ProductsMicroserviceController } from './products-microservice.controller';
 import { ProductsService } from './products.service';
 import { AuthModule } from '../auth/auth.module';
-import { RabbitmqModule } from '../rabbitmq/rabbitmq.module';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
   imports: [
     PrismaModule,
     I18nHelperModule,
     AuthModule,
-    RabbitmqModule,
+    KafkaModule,
   ],
   controllers: [ProductsController, ProductsMicroserviceController],
   providers: [

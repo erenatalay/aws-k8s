@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 
 import { I18nService } from '../i18n/i18n.service';
+import { KafkaService } from '../kafka/kafka.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -17,7 +17,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly i18nService: I18nService,
-    private readonly rabbitmqService: RabbitmqService,
+    private readonly kafkaService: KafkaService,
   ) {}
 
   /**
@@ -45,8 +45,8 @@ export class ProductsService {
         },
       });
 
-      // Emit product created event to RabbitMQ
-      this.rabbitmqService.emit('product.created', {
+      // Emit product created event to Kafka
+      await this.kafkaService.emit('product.created', {
         productId: product.id,
         name: product.name,
         price: product.price,
