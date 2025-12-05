@@ -9,6 +9,8 @@ import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 import { AppController } from './app.contoller';
 import { AuthModule } from './auth/auth.module';
@@ -41,6 +43,13 @@ import { UsersModule } from './users/users.module';
         limit: 10,
       },
     ]),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      playground: true,
+      context: ({ req }) => ({ req }),
+    }),
     AuthModule,
     UsersModule,
     PrismaModule,

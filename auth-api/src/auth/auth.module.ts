@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AuthResolver } from './auth.resolver';
 import { AuthMicroserviceController } from './auth-microservice.controller';
 import { KafkaModule } from '../kafka/kafka.module';
 import { TokenModule } from '../token/token.module';
@@ -35,6 +36,7 @@ import { TokenModule } from '../token/token.module';
   controllers: [AuthController, AuthMicroserviceController],
   providers: [
     AuthService, 
+    AuthResolver,
     PrismaService,
   ],
   exports: [AuthService],

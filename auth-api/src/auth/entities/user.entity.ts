@@ -1,0 +1,61 @@
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+
+@ObjectType()
+export class User {
+  @Field(() => ID)
+  id: string;
+
+  @Field()
+  firstname: string;
+
+  @Field()
+  lastname: string;
+
+  @Field()
+  email: string;
+
+  @Field({ nullable: true })
+  avatar?: string;
+
+  @Field({ nullable: true })
+  birthday?: Date;
+
+  @Field({ nullable: true })
+  phone?: string;
+}
+
+@ObjectType()
+export class AuthResponse {
+  @Field(() => ID)
+  id: string;
+
+  @Field()
+  firstname: string;
+
+  @Field()
+  lastname: string;
+
+  @Field()
+  email: string;
+
+  @Field({ nullable: true })
+  avatar?: string;
+
+  @Field({ nullable: true })
+  birthday?: Date;
+
+  @Field({ nullable: true })
+  phone?: string;
+
+  @Field()
+  accessToken: string;
+
+  @Field()
+  refreshToken: string;
+}
+
+@ObjectType()
+export class MessageResponse {
+  @Field()
+  message: string;
+}
