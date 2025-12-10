@@ -5,12 +5,13 @@ import { UuidModule } from 'src/utils/uuid/uuid.module';
 import { Module } from '@nestjs/common';
 
 import { UsersController } from './users.controller';
+import { UsersResolver } from './users.resolver';
 import { UsersService } from './users.service';
 
 @Module({
   imports: [PrismaModule, UuidModule, I18nHelperModule],
   controllers: [UsersController],
-  providers: [UsersService, HashingService],
+  providers: [UsersService, UsersResolver, HashingService],
   exports: [UsersService],
 })
 export class UsersModule {}
