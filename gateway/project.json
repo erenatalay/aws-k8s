@@ -4,11 +4,12 @@
   "sourceRoot": "gateway/src",
   "projectType": "application",
   "tags": ["type:gateway", "scope:shared"],
+  "implicitDependencies": ["auth-api", "product-api"],
   "targets": {
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npm run start:dev",
+        "command": "../wait-for-services.sh && npm run start:dev",
         "cwd": "gateway"
       }
     },
