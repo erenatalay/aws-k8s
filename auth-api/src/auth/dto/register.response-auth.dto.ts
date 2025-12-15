@@ -32,4 +32,12 @@ export class AuthRegisterResponseDto {
   @ApiProperty({ example: '+1234567890' })
   @IsNotEmpty()
   phone: string;
+
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  @IsNotEmpty()
+  accessToken: string;
+
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  @IsNotEmpty()
+  refreshToken: string;
 }

@@ -1,6 +1,7 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { ProductsService } from './products.service';
 import { Product, ProductsResponse, MessageResponse } from './entities/product.entity';
+import { User } from '../auth/entities/user.stub';
 import {
   CreateProductInput,
   UpdateProductInput,
@@ -52,5 +53,13 @@ export class ProductsResolver {
   @Query(() => String)
   async helloProduct(): Promise<string> {
     return 'Hello from Products GraphQL API!';
+  }
+
+  // Federation: Product'un owner'ı için User referansı dön
+  @ResolveField(() => User)
+  async owner(@Parent() product: Product): Promise<User> {
+    // Federation için sadece referans dönüyoruz
+    // Auth API bu id ile User bilgilerini döndürecek
+    return { __typename: 'User', id: product.userId } as any;
   }
 }

@@ -48,7 +48,12 @@ import { UsersModule } from './users/users.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       playground: true,
+      path: '/api/graphql',
       context: ({ req }) => ({ req }),
+      // Federation yapılandırması
+      buildSchemaOptions: {
+        orphanedTypes: [],
+      },
     }),
     AuthModule,
     UsersModule,

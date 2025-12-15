@@ -6,11 +6,11 @@ import {
   I18nModule,
 } from 'nestjs-i18n';
 import { join } from 'path';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.contoller';
 import { AuthModule } from './auth/auth.module';
@@ -48,7 +48,12 @@ import { SwaggerModule } from './swagger/swagger.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       playground: true,
+      path: '/api/graphql',
       context: ({ req }) => ({ req }),
+      // Federation yapılandırması
+      buildSchemaOptions: {
+        orphanedTypes: [],
+      },
     }),
     PrismaModule,
     SwaggerModule,

@@ -17,6 +17,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // GraphQL context check - if request is undefined, this is a GraphQL error
+    if (!request || !response) {
+      this.logger.error(
+        `GraphQL error: ${exception instanceof Error ? exception.message : String(exception)}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+      // GraphQL için exception'ı tekrar fırlat, Apollo Server handle edecek
+      throw exception;
+    }
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'An error occurred, please try again later';
     let errorDetails = null;
@@ -47,7 +57,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const errorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      path: request?.url || 'unknown',
       message,
 
       ...(typeof errorDetails === 'object' && errorDetails !== null ? { errors: errorDetails } : {}),

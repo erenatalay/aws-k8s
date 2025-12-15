@@ -1,0 +1,93 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthResponse {
+  accessToken: String!
+  avatar: String
+  birthday: DateTime
+  email: String!
+  firstname: String!
+  id: ID!
+  lastname: String!
+  phone: String
+  refreshToken: String!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
+  oldPassword: String!
+  uuid: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input ForgotPasswordInput {
+  email: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type MessageResponse {
+  message: String!
+}
+
+type Mutation {
+  changeUserPassword(input: ChangePasswordInput!): User!
+  deleteUser(uuid: String!): MessageResponse!
+  forgotPassword(forgotPasswordInput: ForgotPasswordInput!): MessageResponse!
+  login(loginInput: LoginInput!): AuthResponse!
+  register(registerInput: RegisterInput!): AuthResponse!
+  resetPassword(resetPasswordInput: ResetPasswordInput!): MessageResponse!
+  updateUser(input: UpdateUserInput!): User!
+  verifyAccount(verifyAccountInput: VerifyAccountInput!): MessageResponse!
+}
+
+type Query {
+  hello: String!
+  user(uuid: String!): User!
+}
+
+input RegisterInput {
+  email: String!
+  firstname: String!
+  lastname: String!
+  password: String!
+}
+
+input ResetPasswordInput {
+  email: String!
+  newPassword: String!
+  resetCode: String!
+}
+
+input UpdateUserInput {
+  avatar: String
+  birthday: DateTime
+  email: String
+  firstname: String
+  lastname: String
+  phone: String
+  uuid: String!
+}
+
+type User {
+  avatar: String
+  birthday: DateTime
+  email: String!
+  firstname: String!
+  id: ID!
+  lastname: String!
+  phone: String
+}
+
+input VerifyAccountInput {
+  activationCode: String!
+  email: String!
+}

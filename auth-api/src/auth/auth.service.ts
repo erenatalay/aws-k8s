@@ -11,8 +11,8 @@ import { I18nService } from '../i18n/i18n.service';
 import { KafkaService } from '../kafka/kafka.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { HashingService } from '../utils/hashing/hashing.module';
 import { TokenService } from '../token/token.service';
+import { HashingService } from '../utils/hashing/hashing.module';
 import { AuthProviderEnum } from './auth.types';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AuthLoginRequestDto } from './dto/login-request-auth.dto';
@@ -116,6 +116,10 @@ export class AuthService {
       activationRequired: true,
     });
 
+    // JWT token oluştur (kullanıcı kayıt olduktan sonra otomatik giriş için)
+    const accessToken = await this.tokenService.createAccessToken(user);
+    const refreshToken = await this.tokenService.createRefreshToken(user);
+
     return {
       id: user.id,
       email: user.email,
@@ -124,6 +128,8 @@ export class AuthService {
       birthday: user.birthday || undefined,
       phone: user.phone || '',
       avatar: user.avatar || '',
+      accessToken,
+      refreshToken,
     };
   }
 

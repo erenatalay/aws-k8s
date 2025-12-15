@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID, Float, Int } from '@nestjs/graphql';
+import { User } from '../../auth/entities/user.stub';
 
 @ObjectType()
 export class Product {
@@ -16,6 +17,10 @@ export class Product {
 
   @Field()
   userId: string;
+
+  // Federation: owner Auth API'den gelecek
+  @Field(() => User, { nullable: true })
+  owner?: User;
 
   @Field()
   createdAt: Date;
