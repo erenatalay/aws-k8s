@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, Float, Int } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Float, Int, Directive } from '@nestjs/graphql';
 import { User } from '../../auth/entities/user.stub';
 
 @ObjectType()
@@ -48,6 +48,7 @@ export class ProductsResponse {
 }
 
 @ObjectType()
+@Directive('@shareable')
 export class MessageResponse {
   @Field()
   message: string;

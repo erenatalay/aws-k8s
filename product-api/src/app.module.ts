@@ -6,7 +6,7 @@ import {
   I18nModule,
 } from 'nestjs-i18n';
 import { join } from 'path';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriver, ApolloDriverConfig, ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -43,17 +43,16 @@ import { SwaggerModule } from './swagger/swagger.module';
         limit: 10,
       },
     ]),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: {
+        path: join(process.cwd(), 'src/schema.gql'),
+        federation: 2,
+      },
       sortSchema: true,
       playground: true,
       path: '/api/graphql',
       context: ({ req }) => ({ req }),
-      // Federation yapılandırması
-      buildSchemaOptions: {
-        orphanedTypes: [],
-      },
     }),
     PrismaModule,
     SwaggerModule,

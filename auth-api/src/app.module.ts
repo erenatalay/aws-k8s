@@ -6,11 +6,11 @@ import {
   I18nModule,
 } from 'nestjs-i18n';
 import { join } from 'path';
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.contoller';
 import { AuthModule } from './auth/auth.module';
@@ -43,17 +43,16 @@ import { UsersModule } from './users/users.module';
         limit: 10,
       },
     ]),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: {
+        path: join(process.cwd(), 'src/schema.gql'),
+        federation: 2,
+      },
       sortSchema: true,
       playground: true,
       path: '/api/graphql',
       context: ({ req }) => ({ req }),
-      // Federation yapılandırması
-      buildSchemaOptions: {
-        orphanedTypes: [],
-      },
     }),
     AuthModule,
     UsersModule,

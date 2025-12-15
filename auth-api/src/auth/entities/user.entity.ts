@@ -56,6 +56,7 @@ export class AuthResponse {
 }
 
 @ObjectType()
+@Directive('@shareable')
 export class MessageResponse {
   @Field()
   message: string;
