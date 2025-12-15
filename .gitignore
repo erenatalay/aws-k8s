@@ -1,1 +1,6 @@
 ~/.npm-global
+.nx/installation
+.nx/cache
+.nx/workspace-data
+node_modules
+.nx

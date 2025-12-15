@@ -1,0 +1,23 @@
+{
+  "name": "product-api",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "product-api/src",
+  "projectType": "application",
+  "tags": ["type:api", "scope:product"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run start:dev",
+        "cwd": "product-api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build",
+        "cwd": "product-api"
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "gateway",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "gateway/src",
+  "projectType": "application",
+  "tags": ["type:gateway", "scope:shared"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run start:dev",
+        "cwd": "gateway"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build",
+        "cwd": "gateway"
+      }
+    }
+  }
+}

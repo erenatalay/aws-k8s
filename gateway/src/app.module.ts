@@ -18,6 +18,9 @@ const getEnvVar = (key: string, defaultValue: string): string => {
     }),
     GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
       driver: ApolloGatewayDriver,
+      server: {
+        context: ({ req }) => ({ req }),
+      },
       gateway: {
         supergraphSdl: new IntrospectAndCompose({
           subgraphs: [
@@ -36,6 +39,10 @@ const getEnvVar = (key: string, defaultValue: string): string => {
               ),
             },
           ],
+          pollIntervalInMs: 10000,
+          introspectionHeaders: {
+            'Content-Type': 'application/json',
+          },
         }),
       },
     }),
