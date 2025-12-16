@@ -17,10 +17,6 @@ export class CreateProductInput {
   @IsNumber()
   @Min(0)
   price: number;
-
-  @Field()
-  @IsString()
-  userId: string;
 }
 
 @InputType()

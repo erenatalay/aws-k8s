@@ -6,7 +6,6 @@ input CreateProductInput {
   description: String
   name: String!
   price: Float!
-  userId: String!
 }
 
 """
