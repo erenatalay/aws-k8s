@@ -3,6 +3,7 @@ import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { Request } from 'express';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -19,7 +20,7 @@ const getEnvVar = (key: string, defaultValue: string): string => {
     GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
       driver: ApolloGatewayDriver,
       server: {
-        context: ({ req }) => ({ req }),
+        context: ({ req }: { req: Request }) => ({ req }),
       },
       gateway: {
         supergraphSdl: new IntrospectAndCompose({
