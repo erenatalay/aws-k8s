@@ -9,13 +9,13 @@
     "ecommerce"
   ],
   "scripts": {
-    "dev": "nx run-many --target=serve --projects=auth-api,product-api,gateway,ecommerce --parallel=4",
+    "dev": "nx run-many --target=serve --projects=auth-api,product-api,gateway,ecommerce --parallel=4 --output-style=stream",
     "stop": "lsof -ti:3001,3002,4000,3003 | xargs kill -9 2>/dev/null || echo 'No running services'",
     "start:auth": "nx serve auth-api",
     "start:product": "nx serve product-api",
     "start:gateway": "nx serve gateway",
     "start:ecommerce": "nx serve ecommerce",
-    "start:all": "nx run-many --target=serve --projects=auth-api,product-api,gateway,ecommerce --parallel=4",
+    "start:all": "nx run-many --target=serve --projects=auth-api,product-api,gateway,ecommerce --parallel=4 --output-style=stream",
     "build:all": "nx run-many --target=build --all",
     "test:all": "nx run-many --target=test --all",
     "lint:all": "nx run-many --target=lint --all",

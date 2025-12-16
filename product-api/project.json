@@ -9,8 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "npm run start:dev",
-        "cwd": "product-api",
-        "readyWhen": "Nest application successfully started"
+        "cwd": "product-api"
       }
     },
     "build": {
