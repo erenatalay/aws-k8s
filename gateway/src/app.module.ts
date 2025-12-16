@@ -21,6 +21,20 @@ const getEnvVar = (key: string, defaultValue: string): string => {
       driver: ApolloGatewayDriver,
       server: {
         context: ({ req }: { req: Request }) => ({ req }),
+        formatError: (error) => {
+          // Return proper HTTP status codes for errors
+          return {
+            message: error.message,
+            extensions: {
+              ...error.extensions,
+              code: error.extensions?.code || 'BAD_REQUEST',
+              http: {
+                status: error.extensions?.code === 'UNAUTHENTICATED' ? 401 : 
+                        error.extensions?.code === 'FORBIDDEN' ? 403 : 400
+              }
+            }
+          };
+        },
       },
       gateway: {
         supergraphSdl: new IntrospectAndCompose({
