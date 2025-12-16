@@ -10,7 +10,8 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "../wait-for-services.sh && npm run start:dev",
-        "cwd": "gateway"
+        "cwd": "gateway",
+        "readyWhen": "Nest application successfully started"
       }
     },
     "build": {

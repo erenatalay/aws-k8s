@@ -70,9 +70,9 @@
   resolved "https://registry.npmjs.org/@apollo/cache-control-types/-/cache-control-types-1.0.3.tgz"
   integrity sha512-F17/vCp7QVwom9eG7ToauIKdAxpSoadsJnqIfyryLFSkLSOEqu+eC5Z3N8OXcUVStuOMcNHlyraRsA6rRICu4g==
 
-"@apollo/client@^4.0.10":
+"@apollo/client/react@^4.0.10":
   version "4.0.10"
-  resolved "https://registry.npmjs.org/@apollo/client/-/client-4.0.10.tgz"
+  resolved "https://registry.npmjs.org/@apollo/client/react/-/client-4.0.10.tgz"
   integrity sha512-xls/1tQq8GjAwn/Zo2LbbwHek7Qn+GrVc6qYgxDknB5xqpa9Lu5+Yt8duRWCUzEAUnf7vh2p61Uvx+C26N4l7g==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
@@ -5597,7 +5597,7 @@ ecdsa-sig-formatter@1.0.11:
   version "0.1.0"
   resolved "file:ecommerce"
   dependencies:
-    "@apollo/client" "^4.0.10"
+    "@apollo/client/react" "^4.0.10"
     "@graphql-codegen/cli" "^6.1.0"
     "@graphql-codegen/client-preset" "^5.2.1"
     "@graphql-codegen/typed-document-node" "^6.1.4"
