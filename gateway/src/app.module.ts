@@ -1,65 +1,161 @@
-import { IntrospectAndCompose } from '@apollo/gateway';
+import { Request, Response } from 'express';
+import { GraphQLFormattedError } from 'graphql';
+import {
+  IntrospectAndCompose,
+  RemoteGraphQLDataSource,
+  GraphQLDataSourceProcessOptions,
+} from '@apollo/gateway';
 import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { Request } from 'express';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-const getEnvVar = (key: string, defaultValue: string): string => {
-  return process.env[key] || defaultValue;
+// Error codes - Frontend ile tutarlı olmalı
+enum ErrorCode {
+  UNAUTHENTICATED = 'UNAUTHENTICATED',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  BAD_REQUEST = 'BAD_REQUEST',
+  NOT_FOUND = 'NOT_FOUND',
+  CONFLICT = 'CONFLICT',
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+}
+
+// Error code -> HTTP Status mapping
+const errorCodeToStatus: Record<string, number> = {
+  [ErrorCode.UNAUTHENTICATED]: 401,
+  [ErrorCode.UNAUTHORIZED]: 401,
+  [ErrorCode.FORBIDDEN]: 403,
+  [ErrorCode.VALIDATION_ERROR]: 400,
+  [ErrorCode.BAD_REQUEST]: 400,
+  [ErrorCode.NOT_FOUND]: 404,
+  [ErrorCode.CONFLICT]: 409,
+  [ErrorCode.INTERNAL_SERVER_ERROR]: 500,
+  [ErrorCode.SERVICE_UNAVAILABLE]: 503,
 };
+
+function generateRequestId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+interface ErrorExtensions {
+  code?: string;
+  statusCode?: number;
+  timestamp?: string;
+  field?: string;
+  details?: Record<string, unknown>;
+}
+
+// Custom DataSource - Header'ları forward eder
+class AuthenticatedDataSource extends RemoteGraphQLDataSource {
+  override willSendRequest(options: GraphQLDataSourceProcessOptions): void {
+    const { request, context } = options;
+    if (!request.http) return;
+
+    const ctx = context as { req?: Request };
+
+    // Authorization header'ını forward et
+    const authorization = ctx.req?.headers?.authorization;
+    if (authorization && typeof authorization === 'string') {
+      request.http.headers.set('authorization', authorization);
+    }
+
+    // Accept-Language header'ını forward et
+    const acceptLanguage = ctx.req?.headers?.['accept-language'];
+    if (acceptLanguage && typeof acceptLanguage === 'string') {
+      request.http.headers.set('accept-language', acceptLanguage);
+    }
+
+    // User-Agent forward et
+    const userAgent = ctx.req?.headers?.['user-agent'];
+    if (userAgent && typeof userAgent === 'string') {
+      request.http.headers.set('user-agent', userAgent);
+    }
+
+    // X-Request-ID for tracing
+    const requestIdHeader = ctx.req?.headers?.['x-request-id'];
+    const requestId =
+      typeof requestIdHeader === 'string'
+        ? requestIdHeader
+        : generateRequestId();
+    request.http.headers.set('x-request-id', requestId);
+  }
+}
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloGatewayDriverConfig>({
       driver: ApolloGatewayDriver,
-      server: {
-        context: ({ req }: { req: Request }) => ({ req }),
-        formatError: (error) => {
-          // Return proper HTTP status codes for errors
-          return {
-            message: error.message,
-            extensions: {
-              ...error.extensions,
-              code: error.extensions?.code || 'BAD_REQUEST',
-              http: {
-                status: error.extensions?.code === 'UNAUTHENTICATED' ? 401 : 
-                        error.extensions?.code === 'FORBIDDEN' ? 403 : 400
-              }
-            }
-          };
-        },
-      },
-      gateway: {
-        supergraphSdl: new IntrospectAndCompose({
-          subgraphs: [
-            {
-              name: 'auth',
-              url: getEnvVar(
-                'AUTH_GRAPHQL_URL',
-                'http://localhost:3001/api/graphql',
-              ),
-            },
-            {
-              name: 'product',
-              url: getEnvVar(
-                'PRODUCT_GRAPHQL_URL',
-                'http://localhost:3002/api/graphql',
-              ),
-            },
-          ],
-          pollIntervalInMs: 10000,
-          introspectionHeaders: {
-            'Content-Type': 'application/json',
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        server: {
+          context: ({ req, res }: { req: Request; res: Response }) => ({
+            req,
+            res,
+          }),
+          formatError: (
+            formattedError: GraphQLFormattedError,
+          ): GraphQLFormattedError => {
+            const extensions = (formattedError.extensions ||
+              {}) as ErrorExtensions;
+            const code = extensions.code || ErrorCode.INTERNAL_SERVER_ERROR;
+            const statusCode =
+              extensions.statusCode || errorCodeToStatus[code] || 500;
+
+            // Development modunda daha fazla bilgi göster
+            const isDev = configService.get('NODE_ENV') !== 'production';
+
+            return {
+              message: formattedError.message,
+              path: formattedError.path,
+              extensions: {
+                code,
+                statusCode,
+                timestamp: extensions.timestamp || new Date().toISOString(),
+                ...(extensions.field && { field: extensions.field }),
+                ...(extensions.details &&
+                  isDev && { details: extensions.details }),
+              },
+            };
           },
-        }),
-      },
+        },
+        gateway: {
+          supergraphSdl: new IntrospectAndCompose({
+            subgraphs: [
+              {
+                name: 'auth',
+                url: configService.get(
+                  'AUTH_GRAPHQL_URL',
+                  'http://localhost:3001/api/graphql',
+                ),
+              },
+              {
+                name: 'product',
+                url: configService.get(
+                  'PRODUCT_GRAPHQL_URL',
+                  'http://localhost:3002/api/graphql',
+                ),
+              },
+            ],
+            pollIntervalInMs: configService.get('GRAPHQL_POLL_INTERVAL', 10000),
+            introspectionHeaders: {
+              'Content-Type': 'application/json',
+            },
+          }),
+          buildService({ url }) {
+            return new AuthenticatedDataSource({ url });
+          },
+        },
+      }),
     }),
   ],
   controllers: [AppController],

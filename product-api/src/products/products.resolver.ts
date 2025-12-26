@@ -1,6 +1,24 @@
-import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  CurrentUser,
+  CurrentUserData,
+} from '../auth/decorators/current-user.decorator';
 import { ProductsService } from './products.service';
-import { Product, ProductsResponse, MessageResponse } from './entities/product.entity';
+import {
+  Product,
+  ProductsResponse,
+  MessageResponse,
+} from './entities/product.entity';
 import { User } from '../auth/entities/user.stub';
 import {
   CreateProductInput,
@@ -13,12 +31,15 @@ export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 
   @Mutation(() => Product)
+  @UseGuards(JwtAuthGuard)
   async createProduct(
     @Args('createProductInput') createProductInput: CreateProductInput,
+    @CurrentUser() user: CurrentUserData,
   ): Promise<Product> {
     const dto = {
       ...createProductInput,
       description: createProductInput.description || '',
+      userId: user.userId,
     };
     return this.productsService.create(dto);
   }
@@ -37,6 +58,7 @@ export class ProductsResolver {
   }
 
   @Mutation(() => Product)
+  @UseGuards(JwtAuthGuard)
   async updateProduct(
     @Args('id') id: string,
     @Args('updateProductInput') updateProductInput: UpdateProductInput,
@@ -45,6 +67,7 @@ export class ProductsResolver {
   }
 
   @Mutation(() => MessageResponse)
+  @UseGuards(JwtAuthGuard)
   async removeProduct(@Args('id') id: string): Promise<MessageResponse> {
     await this.productsService.remove(id);
     return { message: 'Product deleted successfully' };

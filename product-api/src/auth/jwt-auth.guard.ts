@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 import { KafkaService } from '../kafka/kafka.service';
 
@@ -16,7 +17,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(private readonly kafkaService: KafkaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = this.getRequest(context);
     const token = this.extractToken(request);
 
     if (!token) {
@@ -26,7 +27,10 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const result = await firstValueFrom(
-        this.kafkaService.send<{ valid: boolean; payload?: any; error?: string }>('validate_token', { token }),
+        this.kafkaService.send<{ valid: boolean; payload?: any; error?: string }>(
+          'validate_token',
+          { token },
+        ),
       );
       if (!result.valid) {
         this.logger.warn('Token validation failed:', result.error);
@@ -44,15 +48,28 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 
+  private getRequest(context: ExecutionContext): any {
+    // Check if this is a GraphQL request
+    const ctx = GqlExecutionContext.create(context);
+    const gqlRequest = ctx.getContext()?.req;
+
+    if (gqlRequest) {
+      return gqlRequest;
+    }
+
+    // Fall back to HTTP request
+    return context.switchToHttp().getRequest();
+  }
+
   private extractToken(request: any): string | null {
-    const authHeader = request.headers['authorization'];
-    
+    const authHeader = request?.headers?.['authorization'];
+
     if (!authHeader) {
       return null;
     }
 
     const parts = authHeader.split(' ');
-    
+
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
       this.logger.warn('Invalid authorization header format');
       return null;
