@@ -50,7 +50,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: request.url,
       message,
 
-      ...(typeof errorDetails === 'object' && errorDetails !== null ? { errors: errorDetails } : {}),
+      ...(typeof errorDetails === 'object' && errorDetails !== null
+        ? { errors: errorDetails }
+        : {}),
 
       ...(isDevelopment && {
         stack: exception instanceof Error ? exception.stack : undefined,

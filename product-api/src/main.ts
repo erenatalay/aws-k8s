@@ -35,9 +35,9 @@ async function bootstrap() {
   app.use(hpp());
   app.use(compression());
   app.use(cookieParser());
-  
+
   const i18nService = app.get(I18nService);
-  
+
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new I18nValidationPipe(i18nService));
 
@@ -54,8 +54,11 @@ async function bootstrap() {
   });
 
   // Kafka Microservice bağlantısı (product events için)
-  const kafkaBrokers = (configService.get<string>('KAFKA_BROKERS') || 'localhost:19092,localhost:19093').split(',');
-  
+  const kafkaBrokers = (
+    configService.get<string>('KAFKA_BROKERS') ||
+    'localhost:19092,localhost:19093'
+  ).split(',');
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
@@ -77,6 +80,8 @@ async function bootstrap() {
 
   Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
   Logger.log(`📚 Swagger docs available at: http://localhost:${PORT}/api/docs`);
-  Logger.log(`⚡ Kafka connected to: ${kafkaBrokers.join(', ')} for Auth validation & Product events`);
+  Logger.log(
+    `⚡ Kafka connected to: ${kafkaBrokers.join(', ')} for Auth validation & Product events`,
+  );
 }
 void bootstrap();

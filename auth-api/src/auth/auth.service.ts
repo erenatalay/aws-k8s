@@ -101,9 +101,9 @@ export class AuthService {
 
     await this.mailService.userSignUp({
       to: email,
-      data: { 
+      data: {
         hash: activationCode,
-      }
+      },
     });
 
     // Register event'ini Kafka'ya gönder
@@ -195,7 +195,9 @@ export class AuthService {
 
       if (inactiveUser) {
         throw new UnauthorizedException({
-          message: this.i18nService.translate('error.user.account.not.activated'),
+          message: this.i18nService.translate(
+            'error.user.account.not.activated',
+          ),
         });
       }
 
@@ -261,8 +263,10 @@ export class AuthService {
     const resetCode = this.generateRandomCode();
 
     const expiresInMinutes = parseInt(
-      this.configService.get<string>('PASSWORD_RESET_EXPIRES_IN', '15m').replace('m', ''),
-      10
+      this.configService
+        .get<string>('PASSWORD_RESET_EXPIRES_IN', '15m')
+        .replace('m', ''),
+      10,
     );
     const resetExpire = new Date(Date.now() + expiresInMinutes * 60 * 1000);
 
@@ -309,7 +313,7 @@ export class AuthService {
           resetExpire: null,
         },
       });
-      
+
       throw new UnauthorizedException({
         message: this.i18nService.translate('error.reset.code.expired'),
       });

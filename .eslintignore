@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+coverage/
+
+# Generated files
+generated/
+prisma/generated/
+src/gql/
+*.d.ts
+
+# Config files
+*.config.js
+*.config.mjs
+*.config.cjs
+
+# Other
+*.md
+*.json
+*.lock

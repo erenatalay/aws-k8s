@@ -11,18 +11,9 @@ import { AuthModule } from '../auth/auth.module';
 import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    I18nHelperModule,
-    AuthModule,
-    KafkaModule,
-  ],
+  imports: [PrismaModule, I18nHelperModule, AuthModule, KafkaModule],
   controllers: [ProductsController, ProductsMicroserviceController],
-  providers: [
-    ProductsService, 
-    ProductsResolver,
-    PrismaService, 
-  ],
+  providers: [ProductsService, ProductsResolver, PrismaService],
   exports: [ProductsService],
 })
 export class ProductsModule {}

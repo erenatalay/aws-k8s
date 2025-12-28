@@ -54,8 +54,11 @@ async function bootstrap() {
   });
 
   // Kafka Microservice'i ekle
-  const kafkaBrokers = (configService.get<string>('KAFKA_BROKERS') || 'localhost:19092,localhost:19093').split(',');
-  
+  const kafkaBrokers = (
+    configService.get<string>('KAFKA_BROKERS') ||
+    'localhost:19092,localhost:19093'
+  ).split(',');
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {

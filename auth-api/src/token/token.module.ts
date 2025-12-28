@@ -14,8 +14,9 @@ import { I18nHelperModule } from 'src/i18n/i18n.module';
       useFactory: async (configService: ConfigService) => ({
         global: true,
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { 
-          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '7d') as any,
+        signOptions: {
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ||
+            '7d') as any,
         },
       }),
       inject: [ConfigService],

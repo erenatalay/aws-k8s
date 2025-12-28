@@ -27,10 +27,11 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const result = await firstValueFrom(
-        this.kafkaService.send<{ valid: boolean; payload?: any; error?: string }>(
-          'validate_token',
-          { token },
-        ),
+        this.kafkaService.send<{
+          valid: boolean;
+          payload?: any;
+          error?: string;
+        }>('validate_token', { token }),
       );
       if (!result.valid) {
         this.logger.warn('Token validation failed:', result.error);

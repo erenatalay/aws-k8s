@@ -48,20 +48,23 @@ export class I18nValidationPipe extends ValidationPipe {
       return '';
     }
 
-    const translatedMessages = Object.values(constraints).map(message => 
-      this.translateErrorMessage(message)
+    const translatedMessages = Object.values(constraints).map((message) =>
+      this.translateErrorMessage(message),
     );
-    
+
     return translatedMessages.join(', ');
   }
 
   private translateErrorMessage(message: string): string {
     if (message.includes('.')) {
       let translationKey = message;
-      if (!translationKey.startsWith('common.') && !translationKey.startsWith('error.')) {
+      if (
+        !translationKey.startsWith('common.') &&
+        !translationKey.startsWith('error.')
+      ) {
         translationKey = 'common.' + translationKey;
       }
-      
+
       const translated = this.i18nService.translate(translationKey);
       if (translated && translated !== message) {
         return translated;

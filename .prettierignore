@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+.next/
+**/.next/
+coverage/
+**/coverage/
+
+# Generated files
+**/generated/
+**/prisma/generated/
+**/src/gql/
+
+# Package manager
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# Other
+*.md
+*.json
+*.yaml
+*.yml
+

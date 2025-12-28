@@ -3,7 +3,13 @@ import { I18nService } from 'src/i18n/i18n.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+
+interface JwtPayload {
+  id: string;
+  email?: string;
+  type?: string;
+}
 
 @Injectable()
 export class TokenService {
@@ -17,7 +23,7 @@ export class TokenService {
   async verifyToken(token: string) {
     try {
       const secret = this.configService.get<string>('JWT_SECRET');
-      const decoded = await this.jwtService.verify(token, { secret });
+      const decoded = this.jwtService.verify<JwtPayload>(token, { secret });
 
       const user = await this.prismaService.users.findUnique({
         where: { id: decoded.id },
@@ -41,52 +47,55 @@ export class TokenService {
         email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
-        role: 'user', // Eğer role sisteminiz varsa buradan alabilirsiniz
+        role: 'user',
       };
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException({
         message: this.i18nService.translate('error.token.invalid'),
       });
     }
   }
 
-  async createPasswordResetToken(user: Users) {
-    const secret = this.configService.get<string>('JWT_SECRET');
-    const passwordResetExpiresIn = this.configService.get<string>(
-      'PASSWORD_RESET_EXPIRES_IN',
-    );
+  createPasswordResetToken(user: Users): string {
+    const expiresIn =
+      this.configService.get<string>('PASSWORD_RESET_EXPIRES_IN') ?? '15m';
+    const options: JwtSignOptions = {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: expiresIn as JwtSignOptions['expiresIn'],
+    };
     return this.jwtService.sign(
       { email: user.email, id: user.id, type: 'passwordReset' },
-      { secret, expiresIn: passwordResetExpiresIn as any },
+      options,
     );
   }
 
-  async createAccessToken(user: Users) {
-    const payload = {
-      id: user.id,
-    };
-    return this.jwtService.sign(payload, {
+  createAccessToken(user: Users): string {
+    const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN') ?? '1h';
+    const options: JwtSignOptions = {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') as any,
-    });
+      expiresIn: expiresIn as JwtSignOptions['expiresIn'],
+    };
+    return this.jwtService.sign({ id: user.id }, options);
   }
 
-  async createRefreshToken(user: Users) {
-    const payload = { email: user.email };
-    return this.jwtService.sign(payload, {
+  createRefreshToken(user: Users): string {
+    const expiresIn =
+      this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d';
+    const options: JwtSignOptions = {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as any,
-    });
+      expiresIn: expiresIn as JwtSignOptions['expiresIn'],
+    };
+    return this.jwtService.sign({ email: user.email }, options);
   }
 
   async refreshAccessToken(refreshToken: string): Promise<string> {
-    let userEmail;
+    let userEmail: string;
     try {
-      const decoded = this.jwtService.verify(refreshToken, {
+      const decoded = this.jwtService.verify<{ email: string }>(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
       userEmail = decoded.email;
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException({
         message: this.i18nService.translate('error.token.invalid'),
       });

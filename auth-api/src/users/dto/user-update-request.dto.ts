@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsDate, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserUpdateRequestDto {
@@ -16,12 +22,12 @@ export class UserUpdateRequestDto {
   @IsString({ message: 'common.user.lastname.string' })
   @IsNotEmpty({ message: 'common.user.lastname.required' })
   lastname: string;
-  
+
   @ApiProperty({
     example: '1990-01-01',
     description: 'Date in ISO format (YYYY-MM-DD)',
   })
-  @Transform(({ value }) => value ? new Date(value) : null)
+  @Transform(({ value }) => (value ? new Date(value) : null))
   @IsDate({ message: 'common.user.birthday.format' })
   @IsOptional()
   birthday: Date;

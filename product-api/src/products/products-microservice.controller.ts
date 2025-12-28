@@ -2,11 +2,7 @@ import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { ProductsService } from './products.service';
-import {
-  CreateProductDto,
-  UpdateProductDto,
-  QueryProductDto,
-} from './dto';
+import { CreateProductDto, UpdateProductDto, QueryProductDto } from './dto';
 
 @Controller()
 export class ProductsMicroserviceController {
@@ -53,10 +49,7 @@ export class ProductsMicroserviceController {
   ) {
     this.logger.log(`Received product.update message for id: ${data.id}`);
     try {
-      return await this.productsService.update(
-        data.id,
-        data.updateData,
-      );
+      return await this.productsService.update(data.id, data.updateData);
     } catch (error) {
       this.logger.error(`Error updating product ${data.id}:`, error);
       throw error;

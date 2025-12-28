@@ -23,11 +23,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser>(
-    err, 
-    user, 
-  ): TUser {
-
+  handleRequest<TUser>(err, user): TUser {
     if (err || !user) {
       throw (
         err ||
@@ -44,7 +40,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         isActive: true,
       },
     });
-    
+
     if (!dbUser) {
       throw new UnauthorizedException({
         message: this.i18nService.translate('error.auth.userInactive'),

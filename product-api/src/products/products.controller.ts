@@ -78,7 +78,10 @@ export class ProductsController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all products with pagination and filters (Protected by JWT via Kafka)' })
+  @ApiOperation({
+    summary:
+      'Get all products with pagination and filters (Protected by JWT via Kafka)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Products retrieved successfully',

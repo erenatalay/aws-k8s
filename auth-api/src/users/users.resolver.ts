@@ -1,5 +1,11 @@
 import { MessageResponse, User } from 'src/auth/entities/user.entity';
-import { Args, Mutation, Query, Resolver, ResolveReference } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Query,
+  Resolver,
+  ResolveReference,
+} from '@nestjs/graphql';
 
 import { ChangePasswordInput, UpdateUserInput } from './inputs/user.inputs';
 import { UsersService } from './users.service';
@@ -15,7 +21,10 @@ export class UsersResolver {
 
   // Federation: Di\u011fer subgraph'lar User bilgisi istedi\u011finde buraya d\u00fc\u015fer
   @ResolveReference()
-  async resolveReference(reference: { __typename: string; id: string }): Promise<User> {
+  async resolveReference(reference: {
+    __typename: string;
+    id: string;
+  }): Promise<User> {
     return this.usersService.getUserByUuid(reference.id);
   }
 

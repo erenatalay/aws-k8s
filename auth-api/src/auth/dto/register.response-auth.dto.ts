@@ -19,7 +19,7 @@ export class AuthRegisterResponseDto {
   @ApiProperty({ example: 'Doe' })
   @IsNotEmpty()
   lastname: string;
- 
+
   @ApiProperty({ example: 'https://example.com/avatar.jpg' })
   @IsNotEmpty()
   avatar: string;
@@ -28,7 +28,7 @@ export class AuthRegisterResponseDto {
   @ApiProperty({ example: '1990-01-01' })
   @IsNotEmpty()
   birthday?: Date;
-  
+
   @ApiProperty({ example: '+1234567890' })
   @IsNotEmpty()
   phone: string;

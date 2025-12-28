@@ -18,11 +18,26 @@
     "start:all": "nx run-many --target=serve --projects=auth-api,product-api,gateway,ecommerce --parallel=4 --output-style=stream",
     "build:all": "nx run-many --target=build --all",
     "test:all": "nx run-many --target=test --all",
-    "lint:all": "nx run-many --target=lint --all",
+    "lint": "nx run-many --target=lint --all",
+    "lint:fix": "nx run-many --target=lint --all -- --fix",
+    "lint:auth": "nx lint auth-api",
+    "lint:product": "nx lint product-api",
+    "lint:gateway": "nx lint gateway",
+    "lint:ecommerce": "nx lint ecommerce",
     "graph": "nx graph"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
     "@nx/workspace": "^22.2.3",
-    "nx": "^22.2.3"
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.14.0",
+    "nx": "^22.2.3",
+    "prettier": "^3.4.2",
+    "typescript-eslint": "^8.18.0"
   }
 }

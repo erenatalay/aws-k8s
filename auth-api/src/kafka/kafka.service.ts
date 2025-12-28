@@ -15,15 +15,13 @@ export class KafkaService implements OnModuleDestroy {
   private readonly logger = new Logger(KafkaService.name);
   private isConnected = false;
 
-  constructor(
-    @Inject('KAFKA_SERVICE') private readonly client: ClientKafka,
-  ) {}
+  constructor(@Inject('KAFKA_SERVICE') private readonly client: ClientKafka) {}
 
   async onApplicationBootstrap() {
     try {
       // Subscribe to response topics if needed
       const responseTopics = ['auth.response', 'user.response'];
-      
+
       responseTopics.forEach((topic) => {
         this.client.subscribeToResponseOf(topic);
       });
@@ -34,7 +32,9 @@ export class KafkaService implements OnModuleDestroy {
       this.logger.log('📊 Ready to handle high-volume requests');
     } catch (error) {
       this.logger.error('❌ Failed to connect to Kafka', error);
-      this.logger.warn('⚠️  Application will continue without Kafka connection');
+      this.logger.warn(
+        '⚠️  Application will continue without Kafka connection',
+      );
     }
   }
 
@@ -84,7 +84,7 @@ export class KafkaService implements OnModuleDestroy {
     };
 
     this.logger.debug(`📨 Sending message: ${pattern}`);
-    
+
     try {
       return this.client.send<TResult>(pattern, message);
     } catch (error) {
@@ -115,7 +115,9 @@ export class KafkaService implements OnModuleDestroy {
       await Promise.all(promises);
     }
 
-    this.logger.log(`✅ Batch emission completed: ${dataArray.length} messages`);
+    this.logger.log(
+      `✅ Batch emission completed: ${dataArray.length} messages`,
+    );
   }
 
   /**

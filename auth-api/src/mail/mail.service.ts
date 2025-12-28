@@ -17,17 +17,9 @@ export class MailService {
   async userSignUp(mailData: MailData<{ hash: string }>): Promise<void> {
     const i18n = I18nContext.current();
     let emailConfirmTitle: MaybeType<string>;
-    let text1: MaybeType<string>;
-    let text2: MaybeType<string>;
-    let text3: MaybeType<string>;
 
     if (i18n) {
-      [emailConfirmTitle, text1, text2, text3] = await Promise.all([
-        i18n.t('common.confirmEmail'),
-        i18n.t('confirm-email.text1'),
-        i18n.t('confirm-email.text2'),
-        i18n.t('confirm-email.text3'),
-      ]);
+      emailConfirmTitle = await i18n.t('common.confirmEmail');
     }
 
     const workingDirectory = process.cwd();
@@ -75,10 +67,12 @@ export class MailService {
       ]);
     }
 
-    const frontendUrl = this.configService.get<string>('APP_FRONTEND_DOMAIN') || 'http://localhost:3000';
-    
+    const frontendUrl =
+      this.configService.get<string>('APP_FRONTEND_DOMAIN') ||
+      'http://localhost:3000';
+
     const resetUrl = `${frontendUrl}/auth/reset-password?email=${encodeURIComponent(mailData.to)}&code=${mailData.data.hash}`;
-    
+
     const workingDirectory = process.cwd();
 
     await this.mailerService.sendMail({
@@ -100,7 +94,9 @@ export class MailService {
         text1: text1 || 'You have requested to reset your password',
         text2: text2 || 'Please use the button below to reset your password',
         text3: text3 || 'Or use this reset code:',
-        text4: text4 || 'If you did not request a password reset, please ignore this email',
+        text4:
+          text4 ||
+          'If you did not request a password reset, please ignore this email',
         hash: mailData.data.hash,
         expires: new Date(mailData.data.tokenExpires).toLocaleString(),
       },

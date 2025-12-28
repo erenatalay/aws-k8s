@@ -4,6 +4,8 @@ import { Controller, Get } from '@nestjs/common';
 export class AppController {
   @Get()
   getHello(): string {
-    return JSON.stringify({ message: 'Afterlive online api service 1.0.0 version' });
+    return JSON.stringify({
+      message: 'Afterlive online api service 1.0.0 version',
+    });
   }
 }

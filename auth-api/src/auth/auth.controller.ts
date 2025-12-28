@@ -95,7 +95,9 @@ export class AuthController {
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     await this.authService.forgotPassword(forgotPasswordDto);
     return {
-      message: this.i18nService.translate('common.auth.forgot.password.success'),
+      message: this.i18nService.translate(
+        'common.auth.forgot.password.success',
+      ),
     };
   }
 

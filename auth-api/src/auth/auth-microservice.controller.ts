@@ -11,10 +11,9 @@ export class AuthMicroserviceController {
 
   @MessagePattern('validate_token')
   async validateToken(data: any) {
-    
     try {
       const token = data.token || data.data?.token || data;
-      
+
       if (!token) {
         this.logger.error('No token found in request data');
         return {
@@ -25,7 +24,7 @@ export class AuthMicroserviceController {
 
       this.logger.debug(`Validating token: ${token.substring(0, 20)}...`);
       const payload = await this.tokenService.verifyToken(token);
-      
+
       return {
         valid: true,
         payload: {

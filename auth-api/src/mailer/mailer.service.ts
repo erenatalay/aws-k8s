@@ -19,14 +19,16 @@ export class MailerService {
       const port = this.configService.get<number>('MAIL_PORT') || 587;
       const user = this.configService.get<string>('MAIL_USER');
       const password = this.configService.get<string>('MAIL_PASSWORD');
-      
+
       this.logger.log(`Configuring mail with host: ${host}, port: ${port}`);
-      
+
       if (!host || !user || !password) {
-        this.logger.warn('Mail configuration is incomplete. Email sending might not work properly.');
+        this.logger.warn(
+          'Mail configuration is incomplete. Email sending might not work properly.',
+        );
         return;
       }
-      
+
       this.transporter = nodemailer.createTransport({
         host,
         port,
@@ -36,7 +38,7 @@ export class MailerService {
           pass: password,
         },
       });
-      
+
       this.logger.log('Mail transporter created successfully');
     } catch (error) {
       this.logger.error(`Failed to create mail transporter: ${error.message}`);
@@ -54,7 +56,7 @@ export class MailerService {
     if (!this.transporter) {
       await this.createTestAccount();
     }
-    
+
     try {
       let html: string | undefined;
       if (templatePath) {
@@ -64,8 +66,10 @@ export class MailerService {
         })(context);
       }
 
-      const fromName = this.configService.get<string>('MAIL_FROM_NAME') || 'Afterlive';
-      const fromEmail = this.configService.get<string>('MAIL_FROM') || 'noreply@afterlive.com';
+      const fromName =
+        this.configService.get<string>('MAIL_FROM_NAME') || 'Afterlive';
+      const fromEmail =
+        this.configService.get<string>('MAIL_FROM') || 'noreply@afterlive.com';
 
       const info = await this.transporter!.sendMail({
         ...mailOptions,
@@ -74,10 +78,10 @@ export class MailerService {
           : `"${fromName}" <${fromEmail}>`,
         html: mailOptions.html ? mailOptions.html : html,
       });
-      
+
       this.logger.log(`Email sent to: ${mailOptions.to}`);
-      
-      if (this.transporter.options.host === 'smtp.ethereal.email') {
+
+      if (this.transporter?.options.host === 'smtp.ethereal.email') {
         this.logger.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
       }
     } catch (error) {
@@ -85,12 +89,12 @@ export class MailerService {
       throw error;
     }
   }
-  
+
   private async createTestAccount(): Promise<void> {
     try {
       this.logger.warn('Creating Ethereal test account for development');
       const testAccount = await nodemailer.createTestAccount();
-      
+
       this.transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
@@ -100,7 +104,7 @@ export class MailerService {
           pass: testAccount.pass,
         },
       });
-      
+
       this.logger.log(`Test account created: ${testAccount.user}`);
     } catch (error) {
       this.logger.error(`Failed to create test account: ${error.message}`);
