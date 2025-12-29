@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { FormField } from '@/components/forms/FormField';
 import { Navbar } from '@/components/shell/navbar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,30 +14,46 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { register } from '@/lib/graphql/auth';
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from '@/lib/validations/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { login: setAuthUser } = useAuth();
-  const [firstname, setFirstname] = useState('');
-  const [lastname, setLastname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
+  const initialValues: RegisterFormValues = {
+    firstname: '',
+    lastname: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  };
+
+  const handleSubmit = async (
+    values: RegisterFormValues,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+  ) => {
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
     try {
-      const result = await register({ firstname, lastname, email, password });
-      setMessage(`Registered successfully. Welcome, ${result.firstname}!`);
-      // Save auth state
+      const result = await register({
+        firstname: values.firstname,
+        lastname: values.lastname,
+        email: values.email,
+        password: values.password,
+      });
+
+      setSubmitSuccess(
+        `Registration successful! Welcome, ${result.firstname}!`,
+      );
+
       setAuthUser(
         {
           id: result.id,
@@ -45,89 +63,104 @@ export default function RegisterPage() {
         },
         { accessToken: result.accessToken, refreshToken: result.refreshToken },
       );
+
       setTimeout(() => router.push('/products'), 1500);
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      setError(err?.message || 'Registration failed');
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setSubmitError(error?.message || 'Registration failed');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <Navbar />
-      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-12">
-        <Card className="bg-white/5 border-white/10 text-slate-50">
+      <main className="mx-auto flex max-w-md flex-col gap-8 px-4 py-12">
+        <Card className="border-white/10 bg-white/5 text-slate-50">
           <CardHeader>
-            <CardTitle>Register</CardTitle>
+            <CardTitle className="text-2xl">Sign Up</CardTitle>
             <CardDescription className="text-slate-300">
-              Create an account to manage your products.
+              Create a new account to start managing your products.
             </CardDescription>
           </CardHeader>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm text-slate-200" htmlFor="firstname">
-                  First name
-                </label>
-                <Input
-                  id="firstname"
-                  required
-                  value={firstname}
-                  onChange={(e) => setFirstname(e.target.value)}
-                  className="bg-slate-900 text-slate-50 border-slate-800"
+
+          <Formik
+            initialValues={initialValues}
+            validationSchema={registerSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form className="space-y-4 px-6 pb-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    label="First Name"
+                    name="firstname"
+                    placeholder="Your first name"
+                  />
+                  <FormField
+                    label="Last Name"
+                    name="lastname"
+                    placeholder="Your last name"
+                  />
+                </div>
+
+                <FormField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="email@example.com"
                 />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm text-slate-200" htmlFor="lastname">
-                  Last name
-                </label>
-                <Input
-                  id="lastname"
-                  required
-                  value={lastname}
-                  onChange={(e) => setLastname(e.target.value)}
-                  className="bg-slate-900 text-slate-50 border-slate-800"
+
+                <FormField
+                  label="Password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
                 />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-slate-200" htmlFor="email">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-slate-900 text-slate-50 border-slate-800"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-slate-200" htmlFor="password">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-slate-900 text-slate-50 border-slate-800"
-              />
-            </div>
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Creating...' : 'Register'}
-            </Button>
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {error && <p className="text-sm text-red-400">{error}</p>}
-          </form>
-          <CardFooter className="justify-between text-sm text-slate-300">
+
+                <FormField
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                />
+
+                {/* Messages */}
+                {submitSuccess && (
+                  <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-400">
+                    {submitSuccess}
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
+                    {submitError}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Creating account...
+                    </div>
+                  ) : (
+                    'Sign Up'
+                  )}
+                </Button>
+              </Form>
+            )}
+          </Formik>
+
+          <CardFooter className="justify-between border-t border-white/10 text-sm text-slate-300">
             <span>Already have an account?</span>
-            <Link href="/login" className="text-emerald-300 hover:underline">
-              Go to login
+            <Link href="/login" className="text-emerald-400 hover:underline">
+              Sign in
             </Link>
           </CardFooter>
         </Card>

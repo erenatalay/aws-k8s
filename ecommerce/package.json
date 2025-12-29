@@ -14,11 +14,11 @@
     "@apollo/client": "^4.0.10",
     "@graphql-codegen/cli": "^6.1.0",
     "@graphql-codegen/client-preset": "^5.2.1",
+    "@graphql-codegen/introspection": "^4.0.3",
     "@graphql-codegen/typed-document-node": "^6.1.4",
     "@graphql-codegen/typescript": "^5.0.6",
-    "@graphql-codegen/typescript-operations": "^5.0.6",
     "@graphql-codegen/typescript-graphql-request": "^6.2.0",
-    "@graphql-codegen/introspection": "^4.0.3",
+    "@graphql-codegen/typescript-operations": "^5.0.6",
     "@graphql-tools/stitch": "^10.1.6",
     "@graphql-tools/wrap": "^11.1.2",
     "@radix-ui/react-slot": "^1.1.0",
@@ -26,6 +26,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cookie": "^1.1.1",
+    "formik": "^2.4.9",
     "graphql": "^16.12.0",
     "graphql-request": "^7.1.0",
     "graphql-yoga": "^5.10.2",
@@ -34,7 +35,8 @@
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

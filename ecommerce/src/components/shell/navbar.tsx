@@ -1,9 +1,17 @@
 'use client';
-
+import { ShoppingBag, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, User, LogOut } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/context/AuthContext';
 
 export function Navbar() {
@@ -32,19 +40,49 @@ export function Navbar() {
             <Link href="/products">Products</Link>
           </Button>
           {isAuthenticated ? (
-            <>
-              <span className="text-sm text-slate-300">
-                Welcome, {user?.firstname}
-              </span>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut size={16} />
-                Logout
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 text-slate-200 hover:text-white"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white text-sm font-medium">
+                    {user?.firstname?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="hidden sm:inline">{user?.firstname}</span>
+                  <ChevronDown size={14} className="text-slate-400" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-slate-100">
+                      {user?.firstname} {user?.lastname}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {user?.email}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/profile')}>
+                  <User size={16} />
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/profile/edit')}>
+                  <Settings size={16} />
+                  Edit Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Button variant="ghost" asChild>
