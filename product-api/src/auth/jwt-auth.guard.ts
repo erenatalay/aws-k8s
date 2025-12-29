@@ -4,18 +4,9 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { AuthGuard } from '@nestjs/passport';
 
-/**
- * JWT Authentication Guard
- * 
- * ✅ LOCAL token validation (JWT_SECRET ile)
- * ✅ ~1-5ms response time
- * ❌ Kafka round-trip YOK
- * 
- * Sektör standardı: Token self-contained, local validation
- */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   private readonly logger = new Logger(JwtAuthGuard.name);
@@ -35,7 +26,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(err: any, user: any, info: any) {
     if (err || !user) {
-      this.logger.warn(`Authentication failed: ${info?.message || 'Unknown error'}`);
+      this.logger.warn(
+        `Authentication failed: ${info?.message || 'Unknown error'}`,
+      );
       throw err || new UnauthorizedException('Authentication required');
     }
     return user;

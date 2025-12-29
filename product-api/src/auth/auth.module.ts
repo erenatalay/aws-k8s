@@ -6,13 +6,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
-/**
- * Auth Module - JWT Local Validation
- * 
- * ✅ Passport + JWT Strategy
- * ✅ Local token validation (~1-5ms)
- * ❌ Kafka dependency kaldırıldı
- */
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),

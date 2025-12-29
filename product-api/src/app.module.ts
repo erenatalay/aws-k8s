@@ -25,6 +25,9 @@ import { SwaggerModule } from './swagger/swagger.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     GracefulShutdownModule.forRoot(),
     I18nModule.forRootAsync({
       useFactory: () => ({
@@ -63,9 +66,6 @@ import { SwaggerModule } from './swagger/swagger.module';
     AuthModule,
     ProductsModule,
     KafkaModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
   ],
   controllers: [AppController],
   providers: [],
