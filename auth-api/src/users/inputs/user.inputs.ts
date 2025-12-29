@@ -5,10 +5,6 @@ import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 export class ChangePasswordInput {
   @Field()
   @IsString()
-  uuid: string;
-
-  @Field()
-  @IsString()
   oldPassword: string;
 
   @Field()
@@ -19,10 +15,6 @@ export class ChangePasswordInput {
 
 @InputType()
 export class UpdateUserInput {
-  @Field()
-  @IsString()
-  uuid: string;
-
   @Field({ nullable: true })
   @IsOptional()
   @IsString()

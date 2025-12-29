@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Form, Formik } from 'formik';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Key, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -16,15 +16,18 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
-import { useUpdateUser } from '@/hooks';
-import { profileSchema, type ProfileFormValues } from '@/lib/validations/auth';
+import { useChangePassword } from '@/hooks';
+import {
+  changePasswordSchema,
+  type ChangePasswordFormValues,
+} from '@/lib/validations/auth';
 
-export default function ProfileEditPage() {
+export default function ChangePasswordPage() {
   const router = useRouter();
-  const { user, isLoading, updateUser } = useAuth();
-  const { updateUser: updateUserMutation } = useUpdateUser();
+  const { user, isLoading } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const { changePassword: changePasswordMutation } = useChangePassword();
 
   if (isLoading) {
     return (
@@ -48,36 +51,35 @@ export default function ProfileEditPage() {
     );
   }
 
-  const initialValues: ProfileFormValues = {
-    firstname: user.firstname || '',
-    lastname: user.lastname || '',
-    email: user.email || '',
-    phone: user.phone || '',
-    avatar: user.avatar || '',
+  const initialValues: ChangePasswordFormValues = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   };
 
   const handleSubmit = async (
-    values: ProfileFormValues,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+    values: ChangePasswordFormValues,
+    {
+      setSubmitting,
+      resetForm,
+    }: {
+      setSubmitting: (isSubmitting: boolean) => void;
+      resetForm: () => void;
+    },
   ) => {
     setSubmitError(null);
     setSubmitSuccess(false);
 
     try {
-      const result = await updateUserMutation({ ...values });
-
-      updateUser({
-        firstname: result?.firstname,
-        lastname: result?.lastname,
-        email: result?.email,
-        phone: result?.phone || undefined,
-        avatar: result?.avatar || undefined,
+      await changePasswordMutation({
+        oldPassword: values.currentPassword,
+        newPassword: values.newPassword,
       });
-
       setSubmitSuccess(true);
-      setTimeout(() => router.push('/profile'), 1500);
+      resetForm();
+      setTimeout(() => router.push('/profile'), 2000);
     } catch (error: any) {
-      setSubmitError(error?.message || 'Update failed');
+      setSubmitError(error?.message || 'Failed to change password');
     } finally {
       setSubmitting(false);
     }
@@ -95,66 +97,83 @@ export default function ProfileEditPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Edit Profile</h1>
-            <p className="text-slate-400">Update your account information</p>
+            <h1 className="text-3xl font-bold">Change Password</h1>
+            <p className="text-slate-400">Update your account password</p>
           </div>
         </div>
+
+        {/* Security Notice */}
+        <Card className="border-amber-500/20 bg-amber-500/5 text-slate-50">
+          <CardContent className="flex items-start gap-3 p-4">
+            <Shield className="h-5 w-5 text-amber-500 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-amber-400">Security Notice</p>
+              <p className="text-slate-400">
+                Make sure to use a strong password that you don&apos;t use
+                elsewhere. A good password is at least 8 characters long and
+                includes a mix of letters, numbers, and symbols.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Form Card */}
         <Card className="border-white/10 bg-white/5 text-slate-50">
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-emerald-500" />
+              Password Settings
+            </CardTitle>
             <CardDescription className="text-slate-400">
-              Fill out the form below to update your profile
+              Enter your current password and choose a new one
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <Formik
               initialValues={initialValues}
-              validationSchema={profileSchema}
+              validationSchema={changePasswordSchema}
               onSubmit={handleSubmit}
             >
-              {({ isSubmitting, dirty }) => (
+              {({ isSubmitting, dirty, isValid }) => (
                 <Form className="space-y-6">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormField
-                      label="First Name"
-                      name="firstname"
-                      placeholder="Your first name"
-                    />
-                    <FormField
-                      label="Last Name"
-                      name="lastname"
-                      placeholder="Your last name"
-                    />
+                  <FormField
+                    label="Current Password"
+                    name="currentPassword"
+                    type="password"
+                    placeholder="Enter your current password"
+                  />
+
+                  <div className="border-t border-white/10 pt-6">
+                    <h3 className="text-sm font-medium text-slate-300 mb-4">
+                      New Password
+                    </h3>
+                    <div className="space-y-4">
+                      <FormField
+                        label="New Password"
+                        name="newPassword"
+                        type="password"
+                        placeholder="Enter your new password"
+                      />
+
+                      <FormField
+                        label="Confirm New Password"
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Confirm your new password"
+                      />
+                    </div>
                   </div>
-
-                  <FormField
-                    label="Email"
-                    name="email"
-                    type="email"
-                    placeholder="email@example.com"
-                  />
-
-                  <FormField
-                    label="Phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+1 555 555 5555"
-                  />
-
-                  <FormField
-                    label="Avatar URL"
-                    name="avatar"
-                    type="url"
-                    placeholder="https://example.com/avatar.jpg"
-                  />
 
                   {/* Messages */}
                   {submitSuccess && (
                     <div className="rounded-lg bg-emerald-500/10 p-4 text-emerald-400">
-                      Profile updated successfully! Redirecting...
+                      <p className="font-medium">
+                        Password changed successfully!
+                      </p>
+                      <p className="text-sm mt-1">
+                        Redirecting to your profile...
+                      </p>
                     </div>
                   )}
 
@@ -165,21 +184,21 @@ export default function ProfileEditPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 pt-2">
                     <Button
                       type="submit"
-                      disabled={isSubmitting || !dirty}
+                      disabled={isSubmitting || !dirty || !isValid}
                       className="gap-2"
                     >
                       {isSubmitting ? (
                         <>
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Saving...
+                          Updating...
                         </>
                       ) : (
                         <>
-                          <Save className="h-4 w-4" />
-                          Save
+                          <Key className="h-4 w-4" />
+                          Change Password
                         </>
                       )}
                     </Button>

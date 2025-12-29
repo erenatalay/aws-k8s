@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
+import { ChangePasswordInput, User } from '@/graphql/generated/graphql';
 import { CHANGE_PASSWORD } from '@/graphql/operations/auth';
-import type { ChangePasswordInput, User } from '@/graphql/generated';
 
 type ChangePasswordData = { changeUserPassword: User };
 
@@ -10,33 +9,25 @@ export function useChangePassword() {
   const [changeMutation, { loading, error: mutationError }] =
     useMutation<ChangePasswordData>(CHANGE_PASSWORD);
 
-  const [error, setError] = useState<string | null>(null);
+  const changePassword = async (input: ChangePasswordInput): Promise<User> => {
+    const { data, error } = await changeMutation({
+      variables: { input },
+    });
 
-  const changePassword = async (input: ChangePasswordInput) => {
-    try {
-      setError(null);
-
-      const { data } = await changeMutation({
-        variables: { input },
-      });
-
-      if (data?.changeUserPassword) {
-        return data.changeUserPassword;
-      }
-
-      setError('Failed to change password');
-      return null;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to change password';
-      setError(errorMessage);
-      return null;
+    if (error) {
+      throw new Error(error.message);
     }
+
+    if (!data?.changeUserPassword) {
+      throw new Error('Failed to change password');
+    }
+
+    return data.changeUserPassword;
   };
 
   return {
     changePassword,
     loading,
-    error: error || mutationError?.message || null,
+    error: mutationError?.message || null,
   };
 }

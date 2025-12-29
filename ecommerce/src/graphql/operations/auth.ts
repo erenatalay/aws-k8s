@@ -1,9 +1,5 @@
 import { gql } from '@apollo/client';
 
-// ============================================
-// Auth Mutations
-// ============================================
-
 export const REGISTER_USER = gql`
   mutation Register($input: RegisterInput!) {
     register(registerInput: $input) {
@@ -54,13 +50,23 @@ export const RESET_PASSWORD = gql`
   }
 `;
 
-// ============================================
-// User Queries & Mutations
-// ============================================
-
 export const GET_USER = gql`
   query GetUser($uuid: String!) {
     user(uuid: $uuid) {
+      id
+      firstname
+      lastname
+      email
+      avatar
+      birthday
+      phone
+    }
+  }
+`;
+
+export const GET_ME = gql`
+  query GetMe {
+    me {
       id
       firstname
       lastname
@@ -98,8 +104,8 @@ export const CHANGE_PASSWORD = gql`
 `;
 
 export const DELETE_USER = gql`
-  mutation DeleteUser($uuid: String!) {
-    deleteUser(uuid: $uuid) {
+  mutation DeleteUser {
+    deleteUser {
       message
     }
   }

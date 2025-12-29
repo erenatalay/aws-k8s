@@ -17,7 +17,6 @@ type AuthResponse {
 input ChangePasswordInput {
   newPassword: String!
   oldPassword: String!
-  uuid: String!
 }
 
 """
@@ -40,7 +39,7 @@ type MessageResponse {
 
 type Mutation {
   changeUserPassword(input: ChangePasswordInput!): User!
-  deleteUser(uuid: String!): MessageResponse!
+  deleteUser: MessageResponse!
   forgotPassword(forgotPasswordInput: ForgotPasswordInput!): MessageResponse!
   login(loginInput: LoginInput!): AuthResponse!
   register(registerInput: RegisterInput!): AuthResponse!
@@ -51,6 +50,7 @@ type Mutation {
 
 type Query {
   hello: String!
+  me: User!
   user(uuid: String!): User!
 }
 
@@ -74,7 +74,6 @@ input UpdateUserInput {
   firstname: String
   lastname: String
   phone: String
-  uuid: String!
 }
 
 type User {

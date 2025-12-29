@@ -1,5 +1,11 @@
 import { MessageResponse, User } from 'src/auth/entities/user.entity';
 import {
+  CurrentUser,
+  CurrentUserPayload,
+} from 'src/common/decorators/current-user.decorator';
+import { GqlAuthGuard } from 'src/common/guards/gql-auth.guard';
+import { UseGuards } from '@nestjs/common';
+import {
   Args,
   Mutation,
   Query,
@@ -19,7 +25,13 @@ export class UsersResolver {
     return this.usersService.getUserByUuid(uuid);
   }
 
-  // Federation: Di\u011fer subgraph'lar User bilgisi istedi\u011finde buraya d\u00fc\u015fer
+  @Query(() => User, { name: 'me' })
+  @UseGuards(GqlAuthGuard)
+  async getMe(@CurrentUser() user: CurrentUserPayload): Promise<User> {
+    return this.usersService.getUserByUuid(user.id);
+  }
+
+  // Federation: Diğer subgraph'lar User bilgisi istediğinde buraya düşer
   @ResolveReference()
   async resolveReference(reference: {
     __typename: string;
@@ -29,22 +41,33 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
   async changeUserPassword(
+    @CurrentUser() user: CurrentUserPayload,
     @Args('input') input: ChangePasswordInput,
   ): Promise<User> {
-    const { uuid, newPassword, oldPassword } = input;
-    return this.usersService.changeUserPassword(uuid, newPassword, oldPassword);
+    return this.usersService.changeUserPassword(
+      user.id,
+      input.newPassword,
+      input.oldPassword,
+    );
   }
 
   @Mutation(() => User)
-  async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
-    const { uuid, ...payload } = input;
-    return this.usersService.updateUserMe(uuid, payload as any);
+  @UseGuards(GqlAuthGuard)
+  async updateUser(
+    @CurrentUser() user: CurrentUserPayload,
+    @Args('input') input: UpdateUserInput,
+  ): Promise<User> {
+    return this.usersService.updateUserMe(user.id, input as any);
   }
 
   @Mutation(() => MessageResponse)
-  async deleteUser(@Args('uuid') uuid: string): Promise<MessageResponse> {
-    await this.usersService.deleteUserMe(uuid);
+  @UseGuards(GqlAuthGuard)
+  async deleteUser(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<MessageResponse> {
+    await this.usersService.deleteUserMe(user.id);
     return { message: 'User deleted successfully' };
   }
 }

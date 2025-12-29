@@ -1,6 +1,5 @@
 /* eslint-disable */
 import * as types from './graphql';
-export * from './graphql';
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 
 /**
@@ -15,30 +14,53 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  mutation ApiLogin($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n": typeof types.ApiLoginDocument,
-    "\n  mutation ApiRegister($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n": typeof types.ApiRegisterDocument,
-    "\n  mutation ApiLoginAfterRegister($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n": typeof types.ApiLoginAfterRegisterDocument,
-    "\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n": typeof types.RegisterDocument,
-    "\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n": typeof types.LoginDocument,
-    "\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n": typeof types.GetUserDocument,
-    "\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n": typeof types.GetProductsDocument,
-    "\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.GetProductDocument,
-    "\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.CreateProductDocument,
-    "\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.UpdateProductDocument,
-    "\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n": typeof types.DeleteProductDocument,
+  '\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n': typeof types.RegisterDocument;
+  '\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n': typeof types.LoginDocument;
+  '\n  mutation VerifyAccount($input: VerifyAccountInput!) {\n    verifyAccount(verifyAccountInput: $input) {\n      message\n    }\n  }\n': typeof types.VerifyAccountDocument;
+  '\n  mutation ForgotPassword($input: ForgotPasswordInput!) {\n    forgotPassword(forgotPasswordInput: $input) {\n      message\n    }\n  }\n': typeof types.ForgotPasswordDocument;
+  '\n  mutation ResetPassword($input: ResetPasswordInput!) {\n    resetPassword(resetPasswordInput: $input) {\n      message\n    }\n  }\n': typeof types.ResetPasswordDocument;
+  '\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n': typeof types.GetUserDocument;
+  '\n  query GetMe {\n    me {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n': typeof types.GetMeDocument;
+  '\n  mutation UpdateUser($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n': typeof types.UpdateUserDocument;
+  '\n  mutation ChangePassword($input: ChangePasswordInput!) {\n    changeUserPassword(input: $input) {\n      id\n      firstname\n      lastname\n      email\n    }\n  }\n': typeof types.ChangePasswordDocument;
+  '\n  mutation DeleteUser {\n    deleteUser {\n      message\n    }\n  }\n': typeof types.DeleteUserDocument;
+  '\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n': typeof types.GetProductsDocument;
+  '\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.GetProductDocument;
+  '\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.CreateProductDocument;
+  '\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.UpdateProductDocument;
+  '\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n': typeof types.DeleteProductDocument;
 };
 const documents: Documents = {
-    "\n  mutation ApiLogin($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n": types.ApiLoginDocument,
-    "\n  mutation ApiRegister($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n": types.ApiRegisterDocument,
-    "\n  mutation ApiLoginAfterRegister($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n": types.ApiLoginAfterRegisterDocument,
-    "\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n": types.RegisterDocument,
-    "\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n": types.LoginDocument,
-    "\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n": types.GetUserDocument,
-    "\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n": types.GetProductsDocument,
-    "\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": types.GetProductDocument,
-    "\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": types.CreateProductDocument,
-    "\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n": types.UpdateProductDocument,
-    "\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n": types.DeleteProductDocument,
+  '\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n':
+    types.RegisterDocument,
+  '\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n':
+    types.LoginDocument,
+  '\n  mutation VerifyAccount($input: VerifyAccountInput!) {\n    verifyAccount(verifyAccountInput: $input) {\n      message\n    }\n  }\n':
+    types.VerifyAccountDocument,
+  '\n  mutation ForgotPassword($input: ForgotPasswordInput!) {\n    forgotPassword(forgotPasswordInput: $input) {\n      message\n    }\n  }\n':
+    types.ForgotPasswordDocument,
+  '\n  mutation ResetPassword($input: ResetPasswordInput!) {\n    resetPassword(resetPasswordInput: $input) {\n      message\n    }\n  }\n':
+    types.ResetPasswordDocument,
+  '\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n':
+    types.GetUserDocument,
+  '\n  query GetMe {\n    me {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n':
+    types.GetMeDocument,
+  '\n  mutation UpdateUser($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n':
+    types.UpdateUserDocument,
+  '\n  mutation ChangePassword($input: ChangePasswordInput!) {\n    changeUserPassword(input: $input) {\n      id\n      firstname\n      lastname\n      email\n    }\n  }\n':
+    types.ChangePasswordDocument,
+  '\n  mutation DeleteUser {\n    deleteUser {\n      message\n    }\n  }\n':
+    types.DeleteUserDocument,
+  '\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n':
+    types.GetProductsDocument,
+  '\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.GetProductDocument,
+  '\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.CreateProductDocument,
+  '\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.UpdateProductDocument,
+  '\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n':
+    types.DeleteProductDocument,
 };
 
 /**
@@ -58,50 +80,97 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation ApiLogin($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n"): (typeof documents)["\n  mutation ApiLogin($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n',
+): (typeof documents)['\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation ApiRegister($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n"): (typeof documents)["\n  mutation ApiRegister($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n',
+): (typeof documents)['\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation ApiLoginAfterRegister($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n"): (typeof documents)["\n  mutation ApiLoginAfterRegister($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n      accessToken\n      refreshToken\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation VerifyAccount($input: VerifyAccountInput!) {\n    verifyAccount(verifyAccountInput: $input) {\n      message\n    }\n  }\n',
+): (typeof documents)['\n  mutation VerifyAccount($input: VerifyAccountInput!) {\n    verifyAccount(verifyAccountInput: $input) {\n      message\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n"): (typeof documents)["\n  mutation Register($input: RegisterInput!) {\n    register(registerInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation ForgotPassword($input: ForgotPasswordInput!) {\n    forgotPassword(forgotPasswordInput: $input) {\n      message\n    }\n  }\n',
+): (typeof documents)['\n  mutation ForgotPassword($input: ForgotPasswordInput!) {\n    forgotPassword(forgotPasswordInput: $input) {\n      message\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n"): (typeof documents)["\n  mutation Login($input: LoginInput!) {\n    login(loginInput: $input) {\n      id\n      firstname\n      lastname\n      email\n      accessToken\n      refreshToken\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation ResetPassword($input: ResetPasswordInput!) {\n    resetPassword(resetPasswordInput: $input) {\n      message\n    }\n  }\n',
+): (typeof documents)['\n  mutation ResetPassword($input: ResetPasswordInput!) {\n    resetPassword(resetPasswordInput: $input) {\n      message\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n"): (typeof documents)["\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n"];
+export function graphql(
+  source: '\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n',
+): (typeof documents)['\n  query GetUser($uuid: String!) {\n    user(uuid: $uuid) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n"): (typeof documents)["\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n"];
+export function graphql(
+  source: '\n  query GetMe {\n    me {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n',
+): (typeof documents)['\n  query GetMe {\n    me {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation UpdateUser($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpdateUser($input: UpdateUserInput!) {\n    updateUser(input: $input) {\n      id\n      firstname\n      lastname\n      email\n      avatar\n      birthday\n      phone\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation ChangePassword($input: ChangePasswordInput!) {\n    changeUserPassword(input: $input) {\n      id\n      firstname\n      lastname\n      email\n    }\n  }\n',
+): (typeof documents)['\n  mutation ChangePassword($input: ChangePasswordInput!) {\n    changeUserPassword(input: $input) {\n      id\n      firstname\n      lastname\n      email\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n"];
+export function graphql(
+  source: '\n  mutation DeleteUser {\n    deleteUser {\n      message\n    }\n  }\n',
+): (typeof documents)['\n  mutation DeleteUser {\n    deleteUser {\n      message\n    }\n  }\n'];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n"];
+export function graphql(
+  source: '\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n',
+): (typeof documents)['\n  query GetProducts($query: QueryProductInput) {\n    products(query: $query) {\n      data {\n        id\n        name\n        description\n        price\n        userId\n        createdAt\n        updatedAt\n      }\n      total\n      page\n      limit\n      totalPages\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  query GetProduct($id: String!) {\n    product(id: $id) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  mutation CreateProduct($input: CreateProductInput!) {\n    createProduct(createProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpdateProduct($id: String!, $input: UpdateProductInput!) {\n    updateProduct(id: $id, updateProductInput: $input) {\n      id\n      name\n      description\n      price\n      userId\n      createdAt\n      updatedAt\n    }\n  }\n'];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n',
+): (typeof documents)['\n  mutation DeleteProduct($id: String!) {\n    removeProduct(id: $id) {\n      message\n    }\n  }\n'];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
 }
 
-export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> =
+  TDocumentNode extends DocumentNode<infer TType, any> ? TType : never;

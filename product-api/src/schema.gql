@@ -43,7 +43,6 @@ type ProductsResponse {
 }
 
 type Query {
-  helloProduct: String!
   product(id: String!): Product!
   products(query: QueryProductInput): ProductsResponse!
 }
