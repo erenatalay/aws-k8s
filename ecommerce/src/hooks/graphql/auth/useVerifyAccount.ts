@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { VERIFY_ACCOUNT } from '@/graphql/queries/auth';
+import { VERIFY_ACCOUNT } from '@/graphql/operations/auth';
+import type { VerifyAccountInput, MessageResponse } from '@/graphql/generated';
 
-import type { VerifyAccountInput } from '@/gql/graphql';
+type VerifyAccountData = { verifyAccount: MessageResponse };
 
 export function useVerifyAccount() {
   const [verifyMutation, { loading, error: mutationError }] =
-    useMutation(VERIFY_ACCOUNT);
+    useMutation<VerifyAccountData>(VERIFY_ACCOUNT);
 
   const [error, setError] = useState<string | null>(null);
 

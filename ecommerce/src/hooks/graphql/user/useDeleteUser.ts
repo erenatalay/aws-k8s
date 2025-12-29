@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { DELETE_USER } from '@/graphql/queries/auth';
+import { DELETE_USER } from '@/graphql/operations/auth';
+import type { MessageResponse } from '@/graphql/generated';
+
+type DeleteUserData = { deleteUser: MessageResponse };
 
 export function useDeleteUser() {
   const [deleteMutation, { loading, error: mutationError }] =
-    useMutation(DELETE_USER);
+    useMutation<DeleteUserData>(DELETE_USER);
 
   const [error, setError] = useState<string | null>(null);
 

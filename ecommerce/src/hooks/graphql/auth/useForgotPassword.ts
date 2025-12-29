@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { FORGOT_PASSWORD } from '@/graphql/queries/auth';
+import { FORGOT_PASSWORD } from '@/graphql/operations/auth';
+import type { ForgotPasswordInput, MessageResponse } from '@/graphql/generated';
 
-import type { ForgotPasswordInput } from '@/gql/graphql';
+type ForgotPasswordData = { forgotPassword: MessageResponse };
 
 export function useForgotPassword() {
   const [forgotMutation, { loading, error: mutationError }] =
-    useMutation(FORGOT_PASSWORD);
+    useMutation<ForgotPasswordData>(FORGOT_PASSWORD);
 
   const [error, setError] = useState<string | null>(null);
 

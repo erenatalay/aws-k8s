@@ -3,40 +3,23 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 const config: CodegenConfig = {
   schema:
     process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql',
-  documents: ['src/graphql/**/*.graphql'],
+  documents: ['src/graphql/operations/**/*.ts'],
   ignoreNoDocuments: true,
   generates: {
-    // Ana type dosyası
-    './src/generated/graphql.ts': {
-      plugins: [
-        'typescript',
-        'typescript-operations',
-        'typescript-graphql-request',
-      ],
+    // Tek çıktı klasörü - tüm tipler ve operations
+    './src/graphql/generated/': {
+      preset: 'client',
       config: {
+        documentMode: 'documentNode',
         skipTypename: false,
-        withHooks: false,
-        withHOC: false,
-        withComponent: false,
         enumsAsTypes: true,
         scalars: {
           DateTime: 'string',
         },
-        // Error handling için
-        errorType: 'GraphQLError',
       },
-    },
-    // React hooks için ayrı dosya
-    './src/generated/hooks.ts': {
-      preset: 'client',
-      config: {
-        documentMode: 'documentNode',
+      presetConfig: {
         fragmentMasking: false,
       },
-    },
-    // Schema introspection
-    './src/generated/schema.json': {
-      plugins: ['introspection'],
     },
   },
   hooks: {

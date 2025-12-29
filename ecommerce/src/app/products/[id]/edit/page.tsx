@@ -1,8 +1,7 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 
 import { Navbar } from '@/components/shell/navbar';
 import { Button } from '@/components/ui/button';
@@ -10,8 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useProduct } from '@/hooks/useProduct';
-import { useUpdateProduct } from '@/hooks/useUpdateProduct';
+import { useProduct, useUpdateProduct } from '@/hooks';
 
 export default function EditProductPage() {
   const params = useParams();
@@ -99,7 +97,7 @@ export default function EditProductPage() {
             <p className="text-lg">Product not found.</p>
           </div>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => router.push('/products')}
             className="w-fit border-white/20 text-slate-300 hover:bg-white/10"
           >
@@ -185,7 +183,7 @@ export default function EditProductPage() {
               <div className="flex gap-3 justify-end">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => router.push(`/products/${id}`)}
                   disabled={updating}
                   className="border-white/20 text-slate-300 hover:bg-white/10"

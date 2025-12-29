@@ -11,7 +11,7 @@ import type {
   ResetPasswordInput,
   ChangePasswordInput,
   UpdateUserInput,
-} from '@/generated/graphql';
+} from '@/graphql/generated';
 
 // ============================================
 // Fragments

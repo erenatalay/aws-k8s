@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { UPDATE_USER, GET_USER } from '@/graphql/queries/auth';
+import { UPDATE_USER, GET_USER } from '@/graphql/operations/auth';
+import type { UpdateUserInput, User } from '@/graphql/generated';
 
-import type { UpdateUserInput } from '@/gql/graphql';
+type UpdateUserData = { updateUser: User };
 
 export function useUpdateUser() {
-  const [updateMutation, { loading, error: mutationError }] = useMutation(
+  const [updateMutation, { loading, error: mutationError }] = useMutation<UpdateUserData>(
     UPDATE_USER,
     {
       refetchQueries: (result) => {

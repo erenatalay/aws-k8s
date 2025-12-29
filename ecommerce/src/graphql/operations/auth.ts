@@ -1,10 +1,10 @@
-import { graphql } from '../../gql';
+import { gql } from '@apollo/client';
 
 // ============================================
 // Auth Mutations
 // ============================================
 
-export const REGISTER_USER = graphql(`
+export const REGISTER_USER = gql`
   mutation Register($input: RegisterInput!) {
     register(registerInput: $input) {
       id
@@ -15,9 +15,9 @@ export const REGISTER_USER = graphql(`
       refreshToken
     }
   }
-`);
+`;
 
-export const LOGIN_USER = graphql(`
+export const LOGIN_USER = gql`
   mutation Login($input: LoginInput!) {
     login(loginInput: $input) {
       id
@@ -28,37 +28,37 @@ export const LOGIN_USER = graphql(`
       refreshToken
     }
   }
-`);
+`;
 
-export const VERIFY_ACCOUNT = graphql(`
+export const VERIFY_ACCOUNT = gql`
   mutation VerifyAccount($input: VerifyAccountInput!) {
     verifyAccount(verifyAccountInput: $input) {
       message
     }
   }
-`);
+`;
 
-export const FORGOT_PASSWORD = graphql(`
+export const FORGOT_PASSWORD = gql`
   mutation ForgotPassword($input: ForgotPasswordInput!) {
     forgotPassword(forgotPasswordInput: $input) {
       message
     }
   }
-`);
+`;
 
-export const RESET_PASSWORD = graphql(`
+export const RESET_PASSWORD = gql`
   mutation ResetPassword($input: ResetPasswordInput!) {
     resetPassword(resetPasswordInput: $input) {
       message
     }
   }
-`);
+`;
 
 // ============================================
 // User Queries & Mutations
 // ============================================
 
-export const GET_USER = graphql(`
+export const GET_USER = gql`
   query GetUser($uuid: String!) {
     user(uuid: $uuid) {
       id
@@ -70,9 +70,9 @@ export const GET_USER = graphql(`
       phone
     }
   }
-`);
+`;
 
-export const UPDATE_USER = graphql(`
+export const UPDATE_USER = gql`
   mutation UpdateUser($input: UpdateUserInput!) {
     updateUser(input: $input) {
       id
@@ -84,9 +84,9 @@ export const UPDATE_USER = graphql(`
       phone
     }
   }
-`);
+`;
 
-export const CHANGE_PASSWORD = graphql(`
+export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($input: ChangePasswordInput!) {
     changeUserPassword(input: $input) {
       id
@@ -95,12 +95,12 @@ export const CHANGE_PASSWORD = graphql(`
       email
     }
   }
-`);
+`;
 
-export const DELETE_USER = graphql(`
+export const DELETE_USER = gql`
   mutation DeleteUser($uuid: String!) {
     deleteUser(uuid: $uuid) {
       message
     }
   }
-`);
+`;

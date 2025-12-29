@@ -6,8 +6,7 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { Navbar } from '@/components/shell/navbar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { useDeleteProduct } from '@/hooks/useDeleteProduct';
-import { useProducts } from '@/hooks/useProducts';
+import { useDeleteProduct, useProducts } from '@/hooks';
 
 export default function ProductsPage() {
   const router = useRouter();

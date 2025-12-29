@@ -5,8 +5,8 @@ import type {
   LoginInput,
   LoginMutation,
   LoginMutationVariables,
-} from '@/gql/graphql';
-import { LOGIN_USER } from '@/graphql/queries/auth';
+} from '@/graphql/generated';
+import { LOGIN_USER } from '@/graphql/operations/auth';
 
 export function useLogin() {
   const [loginMutation, { loading, error: mutationError }] = useMutation<

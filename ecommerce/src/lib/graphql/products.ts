@@ -7,7 +7,7 @@ import type {
   CreateProductInput,
   UpdateProductInput,
   QueryProductInput,
-} from '@/generated/graphql';
+} from '@/graphql/generated';
 
 // ============================================
 // Fragments

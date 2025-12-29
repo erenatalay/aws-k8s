@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { REGISTER_USER } from '@/graphql/queries/auth';
+import { REGISTER_USER } from '@/graphql/operations/auth';
 
 import type {
   RegisterInput,
   RegisterMutation,
   RegisterMutationVariables,
-} from '@/gql/graphql';
+} from '@/graphql/generated';
 
 export function useRegister() {
   const [registerMutation, { loading, error: mutationError }] = useMutation<

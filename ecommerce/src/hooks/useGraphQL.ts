@@ -179,7 +179,7 @@ export function useLazyQuery<T, V>(
   ) => Promise<
     { success: true; data: T } | { success: false; error: AppGraphQLError }
   >,
-): UseQueryReturn<T, V> & { execute: (variables: V) => Promise<T | null> } {
+): UseQueryReturn<T, V> & { execute: (variables?: V) => Promise<T | null> } {
   const [state, setState] = useState<QueryState<T>>({
     data: null,
     loading: false,
@@ -187,10 +187,10 @@ export function useLazyQuery<T, V>(
   });
 
   const execute = useCallback(
-    async (variables: V): Promise<T | null> => {
+    async (variables?: V): Promise<T | null> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const result = await queryFn(variables);
+      const result = await queryFn(variables as V);
 
       if (result.success) {
         setState({ data: result.data, loading: false, error: null });

@@ -5,13 +5,13 @@ import {
   UPDATE_PRODUCT,
   GET_PRODUCTS,
   GET_PRODUCT,
-} from '@/graphql/queries/products';
+} from '@/graphql/operations/products';
 
 import type {
   UpdateProductInput,
   UpdateProductMutation,
   UpdateProductMutationVariables,
-} from '@/gql/graphql';
+} from '@/graphql/generated';
 
 export function useUpdateProduct() {
   const [updateProductMutation, { loading, error: mutationError }] =

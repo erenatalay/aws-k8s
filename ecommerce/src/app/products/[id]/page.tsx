@@ -6,8 +6,7 @@ import { Navbar } from '@/components/shell/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
-import { useDeleteProduct } from '@/hooks/useDeleteProduct';
-import { useProduct } from '@/hooks/useProduct';
+import { useDeleteProduct, useProduct } from '@/hooks';
 
 export default function ProductDetailPage() {
   const params = useParams();
