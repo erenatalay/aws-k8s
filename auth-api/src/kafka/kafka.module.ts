@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { DLQService } from './dlq.service';
 import { KafkaService } from './kafka.service';
 
 @Module({
@@ -82,7 +83,7 @@ import { KafkaService } from './kafka.service';
       },
     ]),
   ],
-  providers: [KafkaService],
-  exports: [KafkaService, ClientsModule],
+  providers: [KafkaService, DLQService],
+  exports: [KafkaService, DLQService, ClientsModule],
 })
 export class KafkaModule {}

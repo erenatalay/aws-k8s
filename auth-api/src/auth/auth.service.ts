@@ -106,14 +106,19 @@ export class AuthService {
       },
     });
 
-    // Register event'ini Kafka'ya gönder
-    await this.kafkaService.emit('user.registered', {
-      userId: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      registrationTime: new Date(),
-      activationRequired: true,
+    // Register event'ini Kafka'ya gönder (versioned event)
+    await this.kafkaService.emit('user.registered.v1', {
+      version: '1.0.0',
+      timestamp: new Date(),
+      source: 'auth-service',
+      traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      data: {
+        userId: user.id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        registeredAt: new Date(),
+      },
     });
 
     // JWT token oluştur (kullanıcı kayıt olduktan sonra otomatik giriş için)
@@ -222,12 +227,17 @@ export class AuthService {
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
-    // Login event'ini Kafka'ya gönder
-    await this.kafkaService.emit('user.login', {
-      userId: user.id,
-      email: user.email,
-      loginTime: new Date(),
-      userAgent: 'api-login', // Request'ten alınabilir
+    // Login event'ini Kafka'ya gönder (versioned event)
+    await this.kafkaService.emit('user.login.v1', {
+      version: '1.0.0',
+      timestamp: new Date(),
+      source: 'auth-service',
+      traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      data: {
+        userId: user.id,
+        email: user.email,
+        loginTime: new Date(),
+      },
     });
 
     return {

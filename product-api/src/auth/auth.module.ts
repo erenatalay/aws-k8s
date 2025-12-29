@@ -1,11 +1,33 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { KafkaModule } from '../kafka/kafka.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
+/**
+ * Auth Module - JWT Local Validation
+ * 
+ * ✅ Passport + JWT Strategy
+ * ✅ Local token validation (~1-5ms)
+ * ❌ Kafka dependency kaldırıldı
+ */
 @Module({
-  imports: [KafkaModule],
-  providers: [JwtAuthGuard],
-  exports: [JwtAuthGuard],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '15m') as any,
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [JwtStrategy, JwtAuthGuard],
+  exports: [JwtAuthGuard, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

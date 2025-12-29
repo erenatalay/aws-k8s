@@ -19,11 +19,11 @@ export class KafkaService implements OnModuleDestroy {
 
   async onApplicationBootstrap() {
     try {
-      // Subscribe to response topics (including validate_token for JWT auth)
+      // Subscribe to response topics
+      // NOT: validate_token KALDIRILDI - JWT artık local doğrulanıyor
       const responseTopics = [
         'product.response',
         'inventory.response',
-        'validate_token',
       ];
 
       responseTopics.forEach((topic) => {

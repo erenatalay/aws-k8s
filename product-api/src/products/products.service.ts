@@ -45,14 +45,20 @@ export class ProductsService {
         },
       });
 
-      // Emit product created event to Kafka
-      await this.kafkaService.emit('product.created', {
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        createdBy: createProductDto.userId,
+      // Emit product created event to Kafka (versioned event)
+      await this.kafkaService.emit('product.created.v1', {
+        version: '1.0.0',
         timestamp: new Date(),
+        source: 'product-service',
+        traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        data: {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          userId: createProductDto.userId,
+          createdAt: new Date(),
+        },
       });
 
       this.logger.log(`Product created successfully with ID: ${product.id}`);
