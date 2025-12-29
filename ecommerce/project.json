@@ -1,0 +1,23 @@
+{
+  "name": "ecommerce",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "ecommerce/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:frontend"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run dev",
+        "cwd": "ecommerce"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build",
+        "cwd": "ecommerce"
+      }
+    }
+  }
+}
