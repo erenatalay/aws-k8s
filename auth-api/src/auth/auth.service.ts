@@ -8,7 +8,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 
 import { I18nService } from '../i18n/i18n.service';
-import { KafkaService } from '../kafka/kafka.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from '../token/token.service';
@@ -31,7 +30,6 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     private readonly tokenService: TokenService,
-    private readonly kafkaService: KafkaService,
   ) {}
 
   private generateActivationCode(): string {
@@ -103,20 +101,6 @@ export class AuthService {
       to: email,
       data: {
         hash: activationCode,
-      },
-    });
-
-    await this.kafkaService.emit('user.registered.v1', {
-      version: '1.0.0',
-      timestamp: new Date(),
-      source: 'auth-service',
-      traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      data: {
-        userId: user.id,
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        registeredAt: new Date(),
       },
     });
 
@@ -223,18 +207,6 @@ export class AuthService {
 
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
-
-    await this.kafkaService.emit('user.login.v1', {
-      version: '1.0.0',
-      timestamp: new Date(),
-      source: 'auth-service',
-      traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      data: {
-        userId: user.id,
-        email: user.email,
-        loginTime: new Date(),
-      },
-    });
 
     return {
       id: user.id,

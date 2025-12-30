@@ -4,17 +4,15 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HashingModule } from 'src/utils/hashing/hashing.service';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { AuthResolver } from './auth.resolver';
-import { AuthMicroserviceController } from './auth-microservice.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { KafkaModule } from '../kafka/kafka.module';
 import { TokenModule } from '../token/token.module';
+import { AuthController } from './auth.controller';
+import { AuthResolver } from './auth.resolver';
+import { AuthService } from './auth.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -23,7 +21,6 @@ import { TokenModule } from '../token/token.module';
     I18nHelperModule,
     MailModule,
     TokenModule,
-    KafkaModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -37,7 +34,7 @@ import { TokenModule } from '../token/token.module';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController, AuthMicroserviceController],
+  controllers: [AuthController],
   providers: [AuthService, AuthResolver, PrismaService, JwtStrategy],
   exports: [AuthService],
 })

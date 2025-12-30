@@ -51,7 +51,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Create a new product (Protected by JWT via RabbitMQ)',
+    summary: 'Create a new product (Protected by JWT)',
   })
   @ApiResponse({
     status: 201,
@@ -79,8 +79,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary:
-      'Get all products with pagination and filters (Protected by JWT via Kafka)',
+    summary: 'Get all products with pagination and filters (Protected by JWT)',
   })
   @ApiResponse({
     status: 200,
@@ -97,7 +96,7 @@ export class ProductsController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get a product by ID (Protected by JWT via Kafka)' })
+  @ApiOperation({ summary: 'Get a product by ID (Protected by JWT)' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiResponse({
     status: 200,
@@ -133,7 +132,7 @@ export class ProductsController {
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a product (Protected by JWT via RabbitMQ)' })
+  @ApiOperation({ summary: 'Update a product (Protected by JWT)' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiBody({ type: UpdateProductDto })
   @ApiResponse({
@@ -161,7 +160,7 @@ export class ProductsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a product (Protected by JWT via RabbitMQ)' })
+  @ApiOperation({ summary: 'Delete a product (Protected by JWT)' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiResponse({
     status: 200,

@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 
 import { I18nService } from '../i18n/i18n.service';
-import { KafkaService } from '../kafka/kafka.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateProductDto,
@@ -17,17 +16,14 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly i18nService: I18nService,
-    private readonly kafkaService: KafkaService,
   ) {}
 
   /**
-   * Create a new product
    */
   async create(
     createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {
     try {
-      // userId kontrolü
       if (!createProductDto.userId) {
         throw new Error('User ID is required');
       }
@@ -45,22 +41,6 @@ export class ProductsService {
         },
       });
 
-      // Emit product created event to Kafka (versioned event)
-      await this.kafkaService.emit('product.created.v1', {
-        version: '1.0.0',
-        timestamp: new Date(),
-        source: 'product-service',
-        traceId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        data: {
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          description: product.description,
-          userId: createProductDto.userId,
-          createdAt: new Date(),
-        },
-      });
-
       this.logger.log(`Product created successfully with ID: ${product.id}`);
       return product;
     } catch (error) {
@@ -69,9 +49,6 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Get all products with pagination and filters
-   */
   async findAll(query: QueryProductDto): Promise<{
     data: ProductResponseDto[];
     total: number;
@@ -83,7 +60,6 @@ export class ProductsService {
       const { search, userId, page = 1, limit = 10 } = query;
       const skip = (page - 1) * limit;
 
-      // Build where clause
       const where: any = {};
 
       if (search) {
@@ -97,10 +73,8 @@ export class ProductsService {
         where.userId = userId;
       }
 
-      // Get total count
       const total = await this.prisma.products.count({ where });
 
-      // Get products
       const products = await this.prisma.products.findMany({
         where,
         skip,
@@ -127,9 +101,6 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Get a single product by ID
-   */
   async findOne(id: string): Promise<ProductResponseDto> {
     try {
       const product = await this.prisma.products.findUnique({
@@ -149,9 +120,6 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Get products by user ID
-   */
   async findByUserId(userId: string): Promise<ProductResponseDto[]> {
     try {
       const products = await this.prisma.products.findMany({
@@ -169,15 +137,11 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Update a product
-   */
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<ProductResponseDto> {
     try {
-      // Check if product exists
       await this.findOne(id);
 
       const product = await this.prisma.products.update({
@@ -193,12 +157,8 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Delete a product
-   */
   async remove(id: string): Promise<{ message: string }> {
     try {
-      // Check if product exists
       await this.findOne(id);
 
       await this.prisma.products.delete({
@@ -215,9 +175,6 @@ export class ProductsService {
     }
   }
 
-  /**
-   * Get product count by user
-   */
   async getProductCountByUser(userId: string): Promise<number> {
     try {
       const count = await this.prisma.products.count({

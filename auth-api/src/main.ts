@@ -6,7 +6,6 @@ import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/error/http-exception-filter';
@@ -53,32 +52,11 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const kafkaBrokers = (
-    configService.get<string>('KAFKA_BROKERS') ||
-    'localhost:19092,localhost:19093'
-  ).split(',');
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.KAFKA,
-    options: {
-      client: {
-        clientId: 'auth-service',
-        brokers: kafkaBrokers,
-      },
-      consumer: {
-        groupId: 'auth-consumer-group',
-      },
-    },
-  });
-
-  await app.startAllMicroservices();
-
   const PORT = configService.get<number>('API_PORT', { infer: true }) || 3001;
 
   await app.listen(PORT, '0.0.0.0');
 
   Logger.log(`🚀 Application is running on: http://localhost:${PORT}/`);
   Logger.log(`📚 Swagger docs available at: http://localhost:${PORT}/api/docs`);
-  Logger.log(`⚡ Kafka Microservice connected to: ${kafkaBrokers.join(', ')}`);
 }
 void bootstrap();

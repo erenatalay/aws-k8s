@@ -3,16 +3,14 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Module } from '@nestjs/common';
 
-import { ProductsController } from './products.controller';
-import { ProductsMicroserviceController } from './products-microservice.controller';
-import { ProductsService } from './products.service';
-import { ProductsResolver } from './products.resolver';
 import { AuthModule } from '../auth/auth.module';
-import { KafkaModule } from '../kafka/kafka.module';
+import { ProductsController } from './products.controller';
+import { ProductsResolver } from './products.resolver';
+import { ProductsService } from './products.service';
 
 @Module({
-  imports: [PrismaModule, I18nHelperModule, AuthModule, KafkaModule],
-  controllers: [ProductsController, ProductsMicroserviceController],
+  imports: [PrismaModule, I18nHelperModule, AuthModule],
+  controllers: [ProductsController],
   providers: [ProductsService, ProductsResolver, PrismaService],
   exports: [ProductsService],
 })

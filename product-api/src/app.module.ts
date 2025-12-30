@@ -18,7 +18,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.contoller';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health-check/healthCheck.module';
-import { KafkaModule } from './kafka/kafka.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { SwaggerModule } from './swagger/swagger.module';
@@ -65,7 +64,6 @@ import { SwaggerModule } from './swagger/swagger.module';
     HealthModule,
     AuthModule,
     ProductsModule,
-    KafkaModule,
   ],
   controllers: [AppController],
   providers: [],
