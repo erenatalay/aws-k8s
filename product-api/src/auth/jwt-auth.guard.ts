@@ -12,7 +12,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   private readonly logger = new Logger(JwtAuthGuard.name);
 
   getRequest(context: ExecutionContext) {
-    // GraphQL request kontrolü
     const ctx = GqlExecutionContext.create(context);
     const gqlRequest = ctx.getContext()?.req;
 
@@ -20,7 +19,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return gqlRequest;
     }
 
-    // HTTP request fallback
     return context.switchToHttp().getRequest();
   }
 

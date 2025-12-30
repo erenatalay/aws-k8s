@@ -38,10 +38,6 @@ export class KafkaService implements OnModuleDestroy {
     }
   }
 
-  /**
-   * Emit event without expecting response - Fire and forget pattern
-   * Best for high-throughput scenarios
-   */
   async emit(pattern: string, data: any): Promise<void> {
     if (!this.isConnected) {
       this.logger.warn('Kafka not connected, skipping emit');
@@ -65,10 +61,6 @@ export class KafkaService implements OnModuleDestroy {
     }
   }
 
-  /**
-   * Send request and wait for response - Request-reply pattern
-   * Use sparingly for critical operations
-   */
   send<TResult = any>(pattern: string, data: any): Observable<TResult> {
     if (!this.isConnected) {
       this.logger.warn('Kafka not connected, cannot send message');
@@ -120,31 +112,19 @@ export class KafkaService implements OnModuleDestroy {
     );
   }
 
-  /**
-   * Subscribe to a topic for consuming messages
-   */
   subscribeToTopic(topic: string): void {
     this.client.subscribeToResponseOf(topic);
     this.logger.log(`🔔 Subscribed to topic: ${topic}`);
   }
 
-  /**
-   * Get connection status
-   */
   getConnectionStatus(): boolean {
     return this.isConnected;
   }
 
-  /**
-   * Generate unique trace ID for distributed tracing
-   */
   private generateTraceId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  /**
-   * Split array into chunks
-   */
   private chunkArray<T>(array: T[], size: number): T[][] {
     const chunks: T[][] = [];
     for (let i = 0; i < array.length; i += size) {
@@ -153,9 +133,6 @@ export class KafkaService implements OnModuleDestroy {
     return chunks;
   }
 
-  /**
-   * Graceful shutdown
-   */
   async onModuleDestroy() {
     try {
       await this.client.close();
@@ -166,9 +143,6 @@ export class KafkaService implements OnModuleDestroy {
     }
   }
 
-  /**
-   * Health check
-   */
   async healthCheck(): Promise<boolean> {
     return this.isConnected;
   }

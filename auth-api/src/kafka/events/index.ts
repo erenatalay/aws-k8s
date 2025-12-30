@@ -1,14 +1,3 @@
-/**
- * Kafka Event Definitions
- *
- * Event Versioning - Sektör Standardı
- * Her event'in versiyonu var, breaking change'lerde version artırılır
- */
-
-// ============================================
-// Event Base Types
-// ============================================
-
 export interface BaseEvent<T = any> {
   version: string;
   timestamp: Date;
@@ -16,10 +5,6 @@ export interface BaseEvent<T = any> {
   traceId: string;
   data: T;
 }
-
-// ============================================
-// User Events (v1)
-// ============================================
 
 export const USER_EVENTS = {
   REGISTERED: 'user.registered.v1',
@@ -34,7 +19,6 @@ export const USER_EVENTS = {
 
 export type UserEventType = (typeof USER_EVENTS)[keyof typeof USER_EVENTS];
 
-// User Registered Event
 export interface UserRegisteredEventData {
   userId: string;
   email: string;
@@ -45,7 +29,6 @@ export interface UserRegisteredEventData {
 
 export type UserRegisteredEvent = BaseEvent<UserRegisteredEventData>;
 
-// User Login Event
 export interface UserLoginEventData {
   userId: string;
   email: string;
@@ -56,17 +39,12 @@ export interface UserLoginEventData {
 
 export type UserLoginEvent = BaseEvent<UserLoginEventData>;
 
-// User Password Changed Event
 export interface UserPasswordChangedEventData {
   userId: string;
   changedAt: Date;
 }
 
 export type UserPasswordChangedEvent = BaseEvent<UserPasswordChangedEventData>;
-
-// ============================================
-// Helper Functions
-// ============================================
 
 export function createEvent<T>(
   data: T,

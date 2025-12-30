@@ -11,12 +11,6 @@ export interface DLQMessage {
   traceId?: string;
 }
 
-/**
- * Dead Letter Queue Service
- *
- * Başarısız mesajları DLQ topic'ine yönlendirir
- * Sektör standardı: Netflix, Uber, LinkedIn
- */
 @Injectable()
 export class DLQService {
   private readonly logger = new Logger(DLQService.name);
@@ -25,9 +19,6 @@ export class DLQService {
 
   constructor(private readonly kafkaService: KafkaService) {}
 
-  /**
-   * Mesajı DLQ'ya gönder
-   */
   async sendToDLQ(
     originalTopic: string,
     originalMessage: any,
@@ -59,9 +50,6 @@ export class DLQService {
     }
   }
 
-  /**
-   * Mesajı retry et, max retry aşılırsa DLQ'ya gönder
-   */
   async handleWithRetry<T>(
     topic: string,
     message: any,
@@ -83,13 +71,11 @@ export class DLQService {
         );
 
         if (retryCount < this.MAX_RETRIES) {
-          // Exponential backoff: 100ms, 200ms, 400ms...
           await this.delay(100 * Math.pow(2, retryCount - 1));
         }
       }
     }
 
-    // Max retry aşıldı, DLQ'ya gönder
     await this.sendToDLQ(
       topic,
       message,
@@ -101,25 +87,17 @@ export class DLQService {
     return null;
   }
 
-  /**
-   * DLQ'daki mesajları yeniden işle (manual reprocessing)
-   */
   async reprocessDLQ(
     dlqTopic: string,
     _handler: (message: DLQMessage) => Promise<void>,
   ): Promise<void> {
     this.logger.log(`🔄 Reprocessing DLQ: ${dlqTopic}`);
-    // Bu method Kafka consumer tarafından çağrılacak
-    // Implementation depends on your consumer setup
   }
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  /**
-   * Max retry sayısını al
-   */
   getMaxRetries(): number {
     return this.MAX_RETRIES;
   }

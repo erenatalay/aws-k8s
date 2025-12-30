@@ -36,10 +36,6 @@ const PRODUCTS_RESPONSE_FRAGMENT = gql`
   }
 `;
 
-// ============================================
-// Mutations
-// ============================================
-
 const CREATE_PRODUCT_MUTATION = gql`
   ${PRODUCT_FRAGMENT}
   mutation CreateProduct($input: CreateProductInput!) {
@@ -66,10 +62,6 @@ const DELETE_PRODUCT_MUTATION = gql`
   }
 `;
 
-// ============================================
-// Queries
-// ============================================
-
 const GET_PRODUCTS_QUERY = gql`
   ${PRODUCTS_RESPONSE_FRAGMENT}
   query GetProducts($query: QueryProductInput) {
@@ -88,13 +80,6 @@ const GET_PRODUCT_QUERY = gql`
   }
 `;
 
-// ============================================
-// API Functions - Type Safe
-// ============================================
-
-/**
- * Ürün oluştur
- */
 export async function createProduct(
   input: CreateProductInput,
 ): Promise<Product> {
@@ -104,9 +89,6 @@ export async function createProduct(
   return result;
 }
 
-/**
- * Ürün oluştur - Safe version
- */
 export async function createProductSafe(
   input: CreateProductInput,
 ): Promise<GraphQLResult<Product>> {
@@ -120,9 +102,6 @@ export async function createProductSafe(
   return result;
 }
 
-/**
- * Ürün güncelle
- */
 export async function updateProduct(
   id: string,
   input: UpdateProductInput,
@@ -133,26 +112,6 @@ export async function updateProduct(
   return result;
 }
 
-/**
- * Ürün güncelle - Safe version
- */
-export async function updateProductSafe(
-  id: string,
-  input: UpdateProductInput,
-): Promise<GraphQLResult<Product>> {
-  const result = await gqlRequestSafe<{ updateProduct: Product }>(
-    UPDATE_PRODUCT_MUTATION,
-    { id, input },
-  );
-  if (result.success) {
-    return { success: true, data: result.data.updateProduct };
-  }
-  return result;
-}
-
-/**
- * Ürün sil
- */
 export async function deleteProduct(id: string): Promise<MessageResponse> {
   const { removeProduct: result } = await gqlRequest<{
     removeProduct: MessageResponse;
@@ -160,9 +119,6 @@ export async function deleteProduct(id: string): Promise<MessageResponse> {
   return result;
 }
 
-/**
- * Ürün sil - Safe version
- */
 export async function deleteProductSafe(
   id: string,
 ): Promise<GraphQLResult<MessageResponse>> {
@@ -176,9 +132,6 @@ export async function deleteProductSafe(
   return result;
 }
 
-/**
- * Ürünleri listele
- */
 export async function getProducts(
   query?: QueryProductInput,
 ): Promise<ProductsResponse> {
@@ -189,25 +142,6 @@ export async function getProducts(
   return result;
 }
 
-/**
- * Ürünleri listele - Safe version
- */
-export async function getProductsSafe(
-  query?: QueryProductInput,
-): Promise<GraphQLResult<ProductsResponse>> {
-  const result = await gqlRequestSafe<{ products: ProductsResponse }>(
-    GET_PRODUCTS_QUERY,
-    query ? { query } : undefined,
-  );
-  if (result.success) {
-    return { success: true, data: result.data.products };
-  }
-  return result;
-}
-
-/**
- * Tek ürün getir
- */
 export async function getProduct(id: string): Promise<Product> {
   const { product } = await gqlRequest<{ product: Product }>(
     GET_PRODUCT_QUERY,
@@ -218,28 +152,6 @@ export async function getProduct(id: string): Promise<Product> {
   return product;
 }
 
-/**
- * Tek ürün getir - Safe version
- */
-export async function getProductSafe(
-  id: string,
-): Promise<GraphQLResult<Product>> {
-  const result = await gqlRequestSafe<{ product: Product }>(GET_PRODUCT_QUERY, {
-    id,
-  });
-  if (result.success) {
-    return { success: true, data: result.data.product };
-  }
-  return result;
-}
-
-// ============================================
-// Server-side API Functions
-// ============================================
-
-/**
- * Server-side ürünleri listele
- */
 export async function getProductsServer(
   query?: QueryProductInput,
   token?: string,
@@ -252,9 +164,6 @@ export async function getProductsServer(
   return result;
 }
 
-/**
- * Server-side tek ürün getir
- */
 export async function getProductServer(
   id: string,
   token?: string,

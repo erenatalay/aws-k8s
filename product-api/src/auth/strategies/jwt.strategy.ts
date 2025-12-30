@@ -27,11 +27,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /**
-   * JWT doğrulandıktan sonra payload'ı döndürür
-   * DB lookup YAPMIYORUZ - token self-contained
-   * Bu sayede Kafka round-trip yok, ~1ms validation
-   */
   async validate(payload: JwtPayload) {
     if (!payload.id) {
       throw new UnauthorizedException('Invalid token payload');

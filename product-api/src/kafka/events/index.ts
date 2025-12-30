@@ -1,14 +1,3 @@
-/**
- * Kafka Event Definitions
- *
- * Event Versioning - Sektör Standardı
- * Her event'in versiyonu var, breaking change'lerde version artırılır
- */
-
-// ============================================
-// Event Base Types
-// ============================================
-
 export interface BaseEvent<T = any> {
   version: string;
   timestamp: Date;
@@ -16,10 +5,6 @@ export interface BaseEvent<T = any> {
   traceId: string;
   data: T;
 }
-
-// ============================================
-// Product Events (v1)
-// ============================================
 
 export const PRODUCT_EVENTS = {
   CREATED: 'product.created.v1',
@@ -33,7 +18,6 @@ export const PRODUCT_EVENTS = {
 export type ProductEventType =
   (typeof PRODUCT_EVENTS)[keyof typeof PRODUCT_EVENTS];
 
-// Product Created Event
 export interface ProductCreatedEventData {
   productId: string;
   name: string;
@@ -45,7 +29,6 @@ export interface ProductCreatedEventData {
 
 export type ProductCreatedEvent = BaseEvent<ProductCreatedEventData>;
 
-// Product Updated Event
 export interface ProductUpdatedEventData {
   productId: string;
   changes: {
@@ -59,7 +42,6 @@ export interface ProductUpdatedEventData {
 
 export type ProductUpdatedEvent = BaseEvent<ProductUpdatedEventData>;
 
-// Product Deleted Event
 export interface ProductDeletedEventData {
   productId: string;
   deletedBy: string;
@@ -68,7 +50,6 @@ export interface ProductDeletedEventData {
 
 export type ProductDeletedEvent = BaseEvent<ProductDeletedEventData>;
 
-// Product Price Changed Event
 export interface ProductPriceChangedEventData {
   productId: string;
   oldPrice: number;
@@ -78,10 +59,6 @@ export interface ProductPriceChangedEventData {
 }
 
 export type ProductPriceChangedEvent = BaseEvent<ProductPriceChangedEventData>;
-
-// ============================================
-// Helper Functions
-// ============================================
 
 export function createEvent<T>(
   data: T,

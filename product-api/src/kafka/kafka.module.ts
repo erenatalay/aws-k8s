@@ -20,7 +20,6 @@ import { KafkaService } from './kafka.service';
               brokers: configService
                 .get<string>('KAFKA_BROKERS', 'localhost:9092')
                 .split(','),
-              // High-performance configuration
               connectionTimeout: 3000,
               requestTimeout: 30000,
               retry: {
@@ -32,12 +31,11 @@ import { KafkaService } from './kafka.service';
             },
             consumer: {
               groupId: 'product-consumer-group',
-              // High-performance consumer settings
               sessionTimeout: 30000,
               rebalanceTimeout: 60000,
               heartbeatInterval: 3000,
-              maxBytesPerPartition: 1048576, // 1MB per partition
-              maxBytes: 10485760, // 10MB max fetch size
+              maxBytesPerPartition: 1048576,
+              maxBytes: 10485760,
               maxWaitTimeInMs: 5000,
               retry: {
                 initialRetryTime: 100,
@@ -49,13 +47,12 @@ import { KafkaService } from './kafka.service';
               maxInFlightRequests: 5,
             },
             producer: {
-              // High-performance producer settings
               allowAutoTopicCreation: true,
               transactionTimeout: 60000,
               createPartitioner: Partitioners.LegacyPartitioner,
               maxInFlightRequests: 5,
               idempotent: false,
-              compression: 1, // Gzip compression
+              compression: 1,
               retry: {
                 initialRetryTime: 100,
                 retries: 8,

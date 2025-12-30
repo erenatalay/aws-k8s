@@ -25,18 +25,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       const responseBody = exception.getResponse();
 
-      // HttpException'ın yanıt gövdesini kontrol et
       if (typeof responseBody === 'object' && responseBody !== null) {
-        // Mesaj alanını al
         message = (responseBody as any).message || exception.message;
 
-        // Hata detaylarını al (varsa)
         errorDetails = (responseBody as any).errors || null;
       } else {
         message = exception.message;
       }
     } else {
-      // Beklenmeyen hatalar için log oluştur
       this.logger.error(
         `Unexpected error: ${exception instanceof Error ? exception.message : String(exception)}`,
         exception instanceof Error ? exception.stack : undefined,

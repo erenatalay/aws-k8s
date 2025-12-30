@@ -117,9 +117,6 @@ export class DLQService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  /**
-   * Max retry sayısını al
-   */
   getMaxRetries(): number {
     return this.MAX_RETRIES;
   }

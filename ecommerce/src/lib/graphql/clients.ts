@@ -27,25 +27,15 @@ function createClient(token?: string): GraphQLClient {
   });
 }
 
-/**
- * Client-side GraphQL client (cookie'den token alır)
- */
 function getClientSideClient(): GraphQLClient {
   const accessToken = Cookies.get('accessToken');
   return createClient(accessToken);
 }
 
-/**
- * Server-side GraphQL client (token parametre olarak verilir)
- */
 export function getServerSideClient(token?: string): GraphQLClient {
   return createClient(token);
 }
 
-/**
- * GraphQL isteği yapan ana fonksiyon
- * Type-safe ve error handling içerir
- */
 export async function gqlRequest<TData, TVars extends Variables = Variables>(
   document: RequestDocument,
   variables?: TVars,
@@ -66,10 +56,6 @@ export async function gqlRequest<TData, TVars extends Variables = Variables>(
   }
 }
 
-/**
- * Client-side GraphQL caller
- * @deprecated Use gqlRequest instead for better type safety
- */
 export const gqlGateway: GraphQLCaller = async <T>(
   query: RequestDocument,
   variables?: RequestVars,
@@ -103,9 +89,6 @@ export async function gqlRequestSafe<
   }
 }
 
-/**
- * Batch GraphQL requests - Paralel istekler için
- */
 export async function gqlBatchRequest<T extends Record<string, unknown>>(
   requests: Array<{
     document: RequestDocument;

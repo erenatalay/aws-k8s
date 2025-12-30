@@ -9,14 +9,8 @@ export interface CurrentUserData {
   role: string;
 }
 
-/**
- * Custom decorator to extract current user from request
- * Works for both REST and GraphQL contexts
- * Usage: @CurrentUser() user: CurrentUserData
- */
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): CurrentUserData | undefined => {
-    // Try GraphQL context first
     const gqlContext = GqlExecutionContext.create(ctx);
     const gqlRequest = gqlContext.getContext()?.req;
 
@@ -24,7 +18,6 @@ export const CurrentUser = createParamDecorator(
       return gqlRequest.user;
     }
 
-    // Fall back to HTTP context
     const request = ctx.switchToHttp().getRequest();
     return request?.user;
   },

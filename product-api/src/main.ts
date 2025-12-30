@@ -53,7 +53,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Kafka Microservice bağlantısı (product events için)
   const kafkaBrokers = (
     configService.get<string>('KAFKA_BROKERS') ||
     'localhost:19092,localhost:19093'
