@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import type { ResetPasswordInput, MessageResponse } from '@/graphql/generated';
+import type {
+  ResetPasswordInput,
+  MessageResponse,
+} from '@/graphql/generated/graphql';
 import { RESET_PASSWORD } from '@/graphql/operations';
 
 type ResetPasswordData = { resetPassword: MessageResponse };

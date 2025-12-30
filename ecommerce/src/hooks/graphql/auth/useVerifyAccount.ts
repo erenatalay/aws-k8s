@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
+import type {
+  VerifyAccountInput,
+  MessageResponse,
+} from '@/graphql/generated/graphql';
 import { VERIFY_ACCOUNT } from '@/graphql/operations/auth';
-import type { VerifyAccountInput, MessageResponse } from '@/graphql/generated';
 
 type VerifyAccountData = { verifyAccount: MessageResponse };
 

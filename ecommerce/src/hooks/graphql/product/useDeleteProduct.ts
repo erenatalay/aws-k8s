@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
-import { DELETE_PRODUCT, GET_PRODUCTS } from '@/graphql/operations/products';
-
 import type {
   DeleteProductMutation,
   DeleteProductMutationVariables,
-} from '@/graphql/generated';
+} from '@/graphql/generated/graphql';
+import { DELETE_PRODUCT, GET_PRODUCTS } from '@/graphql/operations/products';
 
 export function useDeleteProduct() {
   const [deleteProductMutation, { loading, error: mutationError }] =

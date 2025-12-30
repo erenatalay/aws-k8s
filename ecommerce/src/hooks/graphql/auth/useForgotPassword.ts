@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
+import type {
+  ForgotPasswordInput,
+  MessageResponse,
+} from '@/graphql/generated/graphql';
 import { FORGOT_PASSWORD } from '@/graphql/operations/auth';
-import type { ForgotPasswordInput, MessageResponse } from '@/graphql/generated';
 
 type ForgotPasswordData = { forgotPassword: MessageResponse };
 

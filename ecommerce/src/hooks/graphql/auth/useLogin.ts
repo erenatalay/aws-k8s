@@ -5,7 +5,7 @@ import type {
   LoginInput,
   LoginMutation,
   LoginMutationVariables,
-} from '@/graphql/generated';
+} from '@/graphql/generated/graphql';
 import { LOGIN_USER } from '@/graphql/operations/auth';
 
 export function useLogin() {

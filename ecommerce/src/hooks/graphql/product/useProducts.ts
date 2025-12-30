@@ -1,11 +1,11 @@
 import { useQuery } from '@apollo/client/react';
 
-import { GET_PRODUCTS } from '@/graphql/operations/products';
-
-import type {
+import type {} from '@/graphql/generated';
+import {
   GetProductsQuery,
   GetProductsQueryVariables,
-} from '@/graphql/generated';
+} from '@/graphql/generated/graphql';
+import { GET_PRODUCTS } from '@/graphql/operations/products';
 
 export function useProducts(queryInput?: GetProductsQueryVariables['query']) {
   const { data, loading, error, refetch } = useQuery<

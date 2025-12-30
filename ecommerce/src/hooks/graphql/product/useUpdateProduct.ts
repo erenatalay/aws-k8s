@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
+import type {
+  UpdateProductInput,
+  UpdateProductMutation,
+  UpdateProductMutationVariables,
+} from '@/graphql/generated/graphql';
 import {
   UPDATE_PRODUCT,
   GET_PRODUCTS,
   GET_PRODUCT,
 } from '@/graphql/operations/products';
-
-import type {
-  UpdateProductInput,
-  UpdateProductMutation,
-  UpdateProductMutationVariables,
-} from '@/graphql/generated';
 
 export function useUpdateProduct() {
   const [updateProductMutation, { loading, error: mutationError }] =
