@@ -106,7 +106,6 @@ export class AuthService {
       },
     });
 
-    // Register event'ini Kafka'ya gönder (versioned event)
     await this.kafkaService.emit('user.registered.v1', {
       version: '1.0.0',
       timestamp: new Date(),
@@ -121,7 +120,6 @@ export class AuthService {
       },
     });
 
-    // JWT token oluştur (kullanıcı kayıt olduktan sonra otomatik giriş için)
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
@@ -223,11 +221,9 @@ export class AuthService {
         ),
       });
 
-    // JWT token oluştur
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
-    // Login event'ini Kafka'ya gönder (versioned event)
     await this.kafkaService.emit('user.login.v1', {
       version: '1.0.0',
       timestamp: new Date(),

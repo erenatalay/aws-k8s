@@ -1,9 +1,5 @@
 import * as Yup from 'yup';
 
-// ============================================
-// Login Validation
-// ============================================
-
 export const loginSchema = Yup.object().shape({
   email: Yup.string()
     .email('Please enter a valid email address')
@@ -14,10 +10,6 @@ export const loginSchema = Yup.object().shape({
 });
 
 export type LoginFormValues = Yup.InferType<typeof loginSchema>;
-
-// ============================================
-// Register Validation
-// ============================================
 
 export const registerSchema = Yup.object().shape({
   firstname: Yup.string()
@@ -41,10 +33,6 @@ export const registerSchema = Yup.object().shape({
 });
 
 export type RegisterFormValues = Yup.InferType<typeof registerSchema>;
-
-// ============================================
-// Profile Update Validation
-// ============================================
 
 export const profileSchema = Yup.object().shape({
   firstname: Yup.string()
@@ -77,11 +65,16 @@ export const changePasswordSchema = Yup.object().shape({
   newPassword: Yup.string()
     .min(6, 'Password must be at least 6 characters')
     .matches(/[a-zA-Z]/, 'Password must contain at least one letter')
-    .notOneOf([Yup.ref('currentPassword')], 'New password must be different from current')
+    .notOneOf(
+      [Yup.ref('currentPassword')],
+      'New password must be different from current',
+    )
     .required('New password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('newPassword')], 'Passwords do not match')
     .required('Please confirm your password'),
 });
 
-export type ChangePasswordFormValues = Yup.InferType<typeof changePasswordSchema>;
+export type ChangePasswordFormValues = Yup.InferType<
+  typeof changePasswordSchema
+>;

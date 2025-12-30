@@ -10,7 +10,7 @@ export class AuthMicroserviceController {
   constructor(private readonly tokenService: TokenService) {}
 
   @MessagePattern('validate_token')
-  async validateToken(data: any) {
+  async validateToken(data) {
     try {
       const token = data.token || data.data?.token || data;
 

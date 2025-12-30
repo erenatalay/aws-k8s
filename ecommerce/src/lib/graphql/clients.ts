@@ -1,5 +1,6 @@
 import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import Cookies from 'js-cookie';
+
 import { parseGraphQLError, AppGraphQLError } from './error-codes';
 
 export type RequestVars = Variables | undefined;
@@ -8,13 +9,9 @@ export type GraphQLCaller = <T>(
   variables?: RequestVars,
 ) => Promise<T>;
 
-// Gateway GraphQL Endpoint
 const gatewayEndpoint =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
 
-/**
- * GraphQL client oluşturucu
- */
 function createClient(token?: string): GraphQLClient {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -80,17 +77,10 @@ export const gqlGateway: GraphQLCaller = async <T>(
   return gqlRequest<T>(query, variables);
 };
 
-/**
- * Result wrapper type - Success veya Error döner
- */
 export type GraphQLResult<T> =
   | { success: true; data: T }
   | { success: false; error: AppGraphQLError };
 
-/**
- * Safe GraphQL request - Exception fırlatmaz
- * Try-catch kullanmadan hata yönetimi sağlar
- */
 export async function gqlRequestSafe<
   TData,
   TVars extends Variables = Variables,

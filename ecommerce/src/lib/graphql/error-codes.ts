@@ -1,8 +1,4 @@
-/**
- * GraphQL Error Codes - Backend ile senkronize tutulmalı
- */
 export enum ErrorCode {
-  // Auth errors
   UNAUTHENTICATED = 'UNAUTHENTICATED',
   UNAUTHORIZED = 'UNAUTHORIZED',
   FORBIDDEN = 'FORBIDDEN',
@@ -15,24 +11,19 @@ export enum ErrorCode {
   INVALID_RESET_CODE = 'INVALID_RESET_CODE',
   RESET_CODE_EXPIRED = 'RESET_CODE_EXPIRED',
 
-  // Product errors
   PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND',
   PRODUCT_ALREADY_EXISTS = 'PRODUCT_ALREADY_EXISTS',
   INVALID_PRICE = 'INVALID_PRICE',
 
-  // Validation errors
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   BAD_REQUEST = 'BAD_REQUEST',
 
-  // Resource errors
   NOT_FOUND = 'NOT_FOUND',
   CONFLICT = 'CONFLICT',
 
-  // Server errors
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 
-  // Network errors
   NETWORK_ERROR = 'NETWORK_ERROR',
 }
 
@@ -45,9 +36,6 @@ export interface GraphQLErrorExtensions {
   details?: Record<string, unknown>;
 }
 
-/**
- * Yapılandırılmış GraphQL hatası
- */
 export class AppGraphQLError extends Error {
   public readonly code: ErrorCode;
   public readonly statusCode: number;
@@ -74,9 +62,6 @@ export class AppGraphQLError extends Error {
     this.timestamp = options?.timestamp || new Date().toISOString();
   }
 
-  /**
-   * Hatanın authentication ile ilgili olup olmadığını kontrol eder
-   */
   isAuthError(): boolean {
     return [
       ErrorCode.UNAUTHENTICATED,
@@ -86,18 +71,12 @@ export class AppGraphQLError extends Error {
     ].includes(this.code);
   }
 
-  /**
-   * Hatanın validation ile ilgili olup olmadığını kontrol eder
-   */
   isValidationError(): boolean {
     return [ErrorCode.VALIDATION_ERROR, ErrorCode.BAD_REQUEST].includes(
       this.code,
     );
   }
 
-  /**
-   * Hatanın sunucu hatası olup olmadığını kontrol eder
-   */
   isServerError(): boolean {
     return [
       ErrorCode.INTERNAL_SERVER_ERROR,
@@ -105,9 +84,6 @@ export class AppGraphQLError extends Error {
     ].includes(this.code);
   }
 
-  /**
-   * Kullanıcıya gösterilebilir hata mesajı
-   */
   getUserFriendlyMessage(): string {
     const messages: Record<ErrorCode, string> = {
       [ErrorCode.UNAUTHENTICATED]: 'Lütfen giriş yapın',
@@ -137,11 +113,7 @@ export class AppGraphQLError extends Error {
   }
 }
 
-/**
- * GraphQL hatasını AppGraphQLError'a dönüştürür
- */
 export function parseGraphQLError(error: unknown): AppGraphQLError {
-  // ClientError (graphql-request)
   if (error && typeof error === 'object' && 'response' in error) {
     const clientError = error as {
       response?: {
@@ -169,9 +141,7 @@ export function parseGraphQLError(error: unknown): AppGraphQLError {
     }
   }
 
-  // Standart Error
   if (error instanceof Error) {
-    // Network error kontrolü
     if (error.message.includes('fetch') || error.message.includes('network')) {
       return new AppGraphQLError(
         'Network connection failed',
@@ -187,7 +157,6 @@ export function parseGraphQLError(error: unknown): AppGraphQLError {
     );
   }
 
-  // Bilinmeyen hata
   return new AppGraphQLError(
     'An unexpected error occurred',
     ErrorCode.INTERNAL_SERVER_ERROR,

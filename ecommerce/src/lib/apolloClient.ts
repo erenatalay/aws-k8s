@@ -13,7 +13,6 @@ const httpLink = new HttpLink({
 });
 
 const authLink = new ApolloLink((operation, forward) => {
-  // Client-side: get token from document.cookie
   if (typeof window !== 'undefined') {
     const token = document.cookie
       .split('; ')

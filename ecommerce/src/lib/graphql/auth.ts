@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlRequest, gqlRequestSafe, GraphQLResult } from './clients';
+
 import type {
   AuthResponse,
   User,
@@ -11,11 +11,9 @@ import type {
   ResetPasswordInput,
   ChangePasswordInput,
   UpdateUserInput,
-} from '@/graphql/generated';
+} from '@/graphql/generated/graphql';
 
-// ============================================
-// Fragments
-// ============================================
+import { gqlRequest, gqlRequestSafe, GraphQLResult } from './clients';
 
 const USER_FRAGMENT = gql`
   fragment UserFields on User {
@@ -42,10 +40,6 @@ const AUTH_RESPONSE_FRAGMENT = gql`
     refreshToken
   }
 `;
-
-// ============================================
-// Mutations
-// ============================================
 
 const REGISTER_MUTATION = gql`
   ${AUTH_RESPONSE_FRAGMENT}
@@ -115,10 +109,6 @@ const DELETE_USER_MUTATION = gql`
   }
 `;
 
-// ============================================
-// Queries
-// ============================================
-
 const GET_USER_QUERY = gql`
   ${USER_FRAGMENT}
   query GetUser($uuid: String!) {
@@ -128,13 +118,6 @@ const GET_USER_QUERY = gql`
   }
 `;
 
-// ============================================
-// API Functions - Type Safe
-// ============================================
-
-/**
- * Kullanıcı kaydı
- */
 export async function register(input: RegisterInput): Promise<AuthResponse> {
   const { register: result } = await gqlRequest<{ register: AuthResponse }>(
     REGISTER_MUTATION,
@@ -143,9 +126,6 @@ export async function register(input: RegisterInput): Promise<AuthResponse> {
   return result;
 }
 
-/**
- * Kullanıcı kaydı - Safe version
- */
 export async function registerSafe(
   input: RegisterInput,
 ): Promise<GraphQLResult<AuthResponse>> {
@@ -159,9 +139,6 @@ export async function registerSafe(
   return result;
 }
 
-/**
- * Kullanıcı girişi
- */
 export async function login(input: LoginInput): Promise<AuthResponse> {
   const { login: result } = await gqlRequest<{ login: AuthResponse }>(
     LOGIN_MUTATION,
@@ -170,9 +147,6 @@ export async function login(input: LoginInput): Promise<AuthResponse> {
   return result;
 }
 
-/**
- * Kullanıcı girişi - Safe version
- */
 export async function loginSafe(
   input: LoginInput,
 ): Promise<GraphQLResult<AuthResponse>> {
@@ -185,9 +159,6 @@ export async function loginSafe(
   return result;
 }
 
-/**
- * Hesap doğrulama
- */
 export async function verifyAccount(
   input: VerifyAccountInput,
 ): Promise<MessageResponse> {
@@ -197,9 +168,6 @@ export async function verifyAccount(
   return result;
 }
 
-/**
- * Şifremi unuttum
- */
 export async function forgotPassword(
   input: ForgotPasswordInput,
 ): Promise<MessageResponse> {
@@ -209,9 +177,6 @@ export async function forgotPassword(
   return result;
 }
 
-/**
- * Şifre sıfırlama
- */
 export async function resetPassword(
   input: ResetPasswordInput,
 ): Promise<MessageResponse> {
@@ -221,9 +186,6 @@ export async function resetPassword(
   return result;
 }
 
-/**
- * Şifre değiştirme
- */
 export async function changePassword(
   input: ChangePasswordInput,
 ): Promise<User> {
@@ -233,9 +195,6 @@ export async function changePassword(
   return result;
 }
 
-/**
- * Kullanıcı güncelleme
- */
 export async function updateUser(input: UpdateUserInput): Promise<User> {
   const { updateUser: result } = await gqlRequest<{ updateUser: User }>(
     UPDATE_USER_MUTATION,
@@ -244,9 +203,6 @@ export async function updateUser(input: UpdateUserInput): Promise<User> {
   return result;
 }
 
-/**
- * Kullanıcı silme
- */
 export async function deleteUser(uuid: string): Promise<MessageResponse> {
   const { deleteUser: result } = await gqlRequest<{
     deleteUser: MessageResponse;
@@ -254,17 +210,11 @@ export async function deleteUser(uuid: string): Promise<MessageResponse> {
   return result;
 }
 
-/**
- * Kullanıcı bilgisi getir
- */
 export async function getUser(uuid: string): Promise<User> {
   const { user } = await gqlRequest<{ user: User }>(GET_USER_QUERY, { uuid });
   return user;
 }
 
-/**
- * Kullanıcı bilgisi getir - Safe version
- */
 export async function getUserSafe(uuid: string): Promise<GraphQLResult<User>> {
   const result = await gqlRequestSafe<{ user: User }>(GET_USER_QUERY, { uuid });
   if (result.success) {
@@ -273,13 +223,6 @@ export async function getUserSafe(uuid: string): Promise<GraphQLResult<User>> {
   return result;
 }
 
-// ============================================
-// Server-side API Functions
-// ============================================
-
-/**
- * Server-side kullanıcı bilgisi getir
- */
 export async function getUserServer(
   uuid: string,
   token?: string,

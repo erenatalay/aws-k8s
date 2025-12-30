@@ -53,7 +53,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Kafka Microservice'i ekle
   const kafkaBrokers = (
     configService.get<string>('KAFKA_BROKERS') ||
     'localhost:19092,localhost:19093'
@@ -72,7 +71,6 @@ async function bootstrap() {
     },
   });
 
-  // Tüm microservice'leri başlat
   await app.startAllMicroservices();
 
   const PORT = configService.get<number>('API_PORT', { infer: true }) || 3001;

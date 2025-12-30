@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlRequest, gqlRequestSafe, GraphQLResult } from './clients';
+
 import type {
   Product,
   ProductsResponse,
@@ -7,11 +7,9 @@ import type {
   CreateProductInput,
   UpdateProductInput,
   QueryProductInput,
-} from '@/graphql/generated';
+} from '@/graphql/generated/graphql';
 
-// ============================================
-// Fragments
-// ============================================
+import { gqlRequest, gqlRequestSafe, GraphQLResult } from './clients';
 
 const PRODUCT_FRAGMENT = gql`
   fragment ProductFields on Product {
