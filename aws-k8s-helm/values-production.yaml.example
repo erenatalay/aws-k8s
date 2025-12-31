@@ -1,0 +1,199 @@
+global:
+  imageRegistry: "your-dockerhub-username"
+  imagePullSecrets: []
+  storageClass: "local-path"
+
+authApi:
+  enabled: true
+  name: auth-api
+  image:
+    repository: auth-api
+    tag: "latest"
+    pullPolicy: Always
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  env:
+    NODE_ENV: production
+    PORT: "3000"
+    JWT_SECRET: ""
+    JWT_EXPIRES_IN: "1h"
+    JWT_ISSUER: "auth-service"
+    JWT_AUDIENCE: "api-services"
+
+productApi:
+  enabled: true
+  name: product-api
+  image:
+    repository: product-api
+    tag: "latest"
+    pullPolicy: Always
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  env:
+    NODE_ENV: production
+    PORT: "3001"
+    AUTH_SERVICE_URL: "http://auth-api:3000"
+    JWT_ISSUER: "auth-service"
+    JWT_AUDIENCE: "api-services"
+
+gateway:
+  enabled: true
+  name: gateway
+  image:
+    repository: gateway
+    tag: "latest"
+    pullPolicy: Always
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 4000
+    targetPort: 4000
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  env:
+    NODE_ENV: production
+    PORT: "4000"
+    AUTH_GRAPHQL_URL: "http://auth-api:3000/api/graphql"
+    PRODUCT_GRAPHQL_URL: "http://product-api:3001/api/graphql"
+    GRAPHQL_POLL_INTERVAL: "10000"
+
+ecommerce:
+  enabled: true
+  name: ecommerce
+  image:
+    repository: ecommerce
+    tag: "latest"
+    pullPolicy: Always
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3002
+    targetPort: 3002
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  env:
+    NODE_ENV: production
+    PORT: "3002"
+    NEXT_PUBLIC_AUTH_API_URL: "https://api.yourdomain.com/auth"
+    NEXT_PUBLIC_PRODUCT_API_URL: "https://api.yourdomain.com/product"
+
+postgresql-auth:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    database: "auth_db"
+    username: "auth_user"
+    password: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: "local-path"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+postgresql-product:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    database: "product_db"
+    username: "product_user"
+    password: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: "local-path"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: api.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: app.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-tls
+      hosts:
+        - api.yourdomain.com
+    - secretName: app-tls
+      hosts:
+        - app.yourdomain.com
+
+secrets:
+  authApi:
+    jwtSecret: ""
+    databaseUrl: ""
+  productApi:
+    databaseUrl: ""
+

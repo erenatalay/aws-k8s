@@ -10,7 +10,7 @@
   "user.password.required": "Password length must be at least 8 characters",
   "user.password.minlength": "Password length must be at least 8 characters",
   "user.password.string": "Password must be a string",
-  "app.welcome": "Afterlive online api service 1.0.0 version",
+  "app.welcome": "online api service 1.0.0 version",
   "api.auth.register.summary": "User register",
   "api.auth.register.success": "Successful register",
   "api.auth.login.summary": "User login",

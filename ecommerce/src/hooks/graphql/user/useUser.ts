@@ -1,8 +1,10 @@
 import { useQuery } from '@apollo/client/react';
 
+import type {
+  GetUserQuery,
+  GetUserQueryVariables,
+} from '@/graphql/generated/graphql';
 import { GET_USER } from '@/graphql/operations/auth';
-
-import type { GetUserQuery, GetUserQueryVariables } from '@/graphql/generated';
 
 export function useUser(uuid: string) {
   const { data, loading, error, refetch } = useQuery<

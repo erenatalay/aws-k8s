@@ -13,15 +13,13 @@ RUN npm install --omit=dev --legacy-peer-deps
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* yarn.lock* ./
+# Tüm dependencies'i yükle (devDependencies dahil - build için gerekli)
 RUN npm install --legacy-peer-deps
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build the application
-RUN npm run build
+# Build the application (npx kullanarak nest komutunu bul)
+RUN npx nest build || npm run build
 
 # Production image, copy all the files and run the application
 FROM base AS runner
@@ -36,13 +34,12 @@ RUN adduser --system --uid 1001 nestjs
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/generated ./generated
 
 USER nestjs
 
-EXPOSE 3000
+EXPOSE 4000
 
-ENV PORT=3000
+ENV PORT=4000
 
 CMD ["npm", "run", "start:prod"]
+

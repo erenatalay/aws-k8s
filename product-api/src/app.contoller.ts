@@ -5,7 +5,7 @@ export class AppController {
   @Get()
   getHello(): string {
     return JSON.stringify({
-      message: 'Afterlive online api service 1.0.0 version',
+      message: 'online api service 1.0.0 version',
     });
   }
 }

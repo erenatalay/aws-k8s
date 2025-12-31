@@ -1,8 +1,7 @@
 'use client';
-
+import { useState } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 import { ProductCard } from '@/components/products/ProductCard';
 import { Navbar } from '@/components/shell/navbar';
@@ -54,7 +53,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
           <div className="flex gap-2">
             <Button
               onClick={handleRefresh}
-              variant="outline"
+              variant="ghost"
               className="border-slate-700 text-slate-300 hover:bg-slate-800"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -96,4 +95,3 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     </div>
   );
 }
-

@@ -1,0 +1,62 @@
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+{{- $host := .host }}
+{{- $isApiHost := hasPrefix "api" $host }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chart.fullname" $ }}-{{ $host | replace "." "-" }}
+  labels:
+    {{- include "chart.labels" $ | nindent 4 }}
+  {{- with $.Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if $.Values.ingress.className }}
+  ingressClassName: {{ $.Values.ingress.className }}
+  {{- end }}
+  {{- if $.Values.ingress.tls }}
+  {{- $tlsEntry := false }}
+  {{- range $.Values.ingress.tls }}
+  {{- range .hosts }}
+  {{- if eq . $host }}
+  {{- $tlsEntry = true }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if $tlsEntry }}
+  tls:
+    {{- range $.Values.ingress.tls }}
+    {{- $hasHost := false }}
+    {{- range .hosts }}
+    {{- if eq . $host }}
+    {{- $hasHost = true }}
+    {{- end }}
+    {{- end }}
+    {{- if $hasHost }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  rules:
+    - host: {{ $host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ if $isApiHost }}{{ $.Values.gateway.name }}{{ else }}{{ $.Values.ecommerce.name }}{{ end }}
+                port:
+                  number: {{ if $isApiHost }}{{ $.Values.gateway.service.port }}{{ else }}{{ $.Values.ecommerce.service.port }}{{ end }}
+          {{- end }}
+{{- end }}
+{{- end }}

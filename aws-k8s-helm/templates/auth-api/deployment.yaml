@@ -1,0 +1,66 @@
+{{- if .Values.authApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.authApi.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth-api
+spec:
+  replicas: {{ .Values.authApi.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auth-api
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: auth-api
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.authApi.name }}
+        {{- if .Values.global.imageRegistry }}
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.authApi.image.repository }}:{{ .Values.authApi.image.tag }}"
+        {{- else }}
+        image: "{{ .Values.authApi.image.repository }}:{{ .Values.authApi.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.authApi.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.authApi.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.authApi.env.NODE_ENV | quote }}
+        - name: PORT
+          value: {{ .Values.authApi.env.PORT | quote }}
+        - name: DATABASE_URL
+          value: "postgresql://{{ .Values.postgresql-auth.auth.username }}:{{ .Values.postgresql-auth.auth.password }}@{{ .Release.Name }}-postgresql-auth:5432/{{ .Values.postgresql-auth.auth.database }}?schema=public"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.authApi.name }}-secret
+              key: jwt-secret
+        - name: JWT_EXPIRES_IN
+          value: {{ .Values.authApi.env.JWT_EXPIRES_IN | quote }}
+        - name: JWT_ISSUER
+          value: {{ .Values.authApi.env.JWT_ISSUER | quote }}
+        - name: JWT_AUDIENCE
+          value: {{ .Values.authApi.env.JWT_AUDIENCE | quote }}
+        {{- with .Values.authApi.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.authApi.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.authApi.resources | nindent 10 }}
+{{- end }}
+

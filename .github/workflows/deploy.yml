@@ -1,0 +1,196 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Auth API
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth-api
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/auth-api:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/auth-api:latest
+
+      - name: Build and push Product API
+        uses: docker/build-push-action@v5
+        with:
+          context: ./product-api
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/product-api:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/product-api:latest
+
+      - name: Build and push Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./gateway
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/gateway:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/gateway:latest
+
+      - name: Build and push Ecommerce
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ecommerce
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ecommerce:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ecommerce:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          kubectl config set-context --current --namespace=production
+
+      - name: Add Bitnami Helm repository
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Update Helm dependencies
+        run: |
+          cd aws-k8s-helm
+          helm dependency update
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create or update secrets
+        run: |
+          kubectl create secret generic auth-api-secret \
+            --from-literal=jwt-secret="${{ secrets.JWT_SECRET }}" \
+            --namespace production \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Prepare values file
+        run: |
+          cd aws-k8s-helm
+          cat > values-production.yaml <<EOF
+          global:
+            imageRegistry: "${{ secrets.DOCKERHUB_USERNAME }}"
+            storageClass: "${{ secrets.STORAGE_CLASS }}"
+          authApi:
+            image:
+              repository: "${{ secrets.AUTH_API_IMAGE_REPOSITORY }}"
+              tag: "${{ github.sha }}"
+            env:
+              JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+              JWT_EXPIRES_IN: "${{ secrets.JWT_EXPIRES_IN }}"
+              JWT_ISSUER: "${{ secrets.JWT_ISSUER }}"
+              JWT_AUDIENCE: "${{ secrets.JWT_AUDIENCE }}"
+          productApi:
+            image:
+              repository: "${{ secrets.PRODUCT_API_IMAGE_REPOSITORY }}"
+              tag: "${{ github.sha }}"
+            env:
+              AUTH_SERVICE_URL: "${{ secrets.AUTH_SERVICE_URL }}"
+              JWT_ISSUER: "${{ secrets.JWT_ISSUER }}"
+              JWT_AUDIENCE: "${{ secrets.JWT_AUDIENCE }}"
+          gateway:
+            image:
+              repository: "${{ secrets.GATEWAY_IMAGE_REPOSITORY }}"
+              tag: "${{ github.sha }}"
+            env:
+              AUTH_GRAPHQL_URL: "${{ secrets.AUTH_GRAPHQL_URL }}"
+              PRODUCT_GRAPHQL_URL: "${{ secrets.PRODUCT_GRAPHQL_URL }}"
+              GRAPHQL_POLL_INTERVAL: "${{ secrets.GRAPHQL_POLL_INTERVAL }}"
+          ecommerce:
+            image:
+              repository: "${{ secrets.ECOMMERCE_IMAGE_REPOSITORY }}"
+              tag: "${{ github.sha }}"
+            env:
+              NEXT_PUBLIC_AUTH_API_URL: "${{ secrets.NEXT_PUBLIC_AUTH_API_URL }}"
+              NEXT_PUBLIC_PRODUCT_API_URL: "${{ secrets.NEXT_PUBLIC_PRODUCT_API_URL }}"
+          postgresql-auth:
+            auth:
+              postgresPassword: "${{ secrets.POSTGRES_AUTH_POSTGRES_PASSWORD }}"
+              database: "${{ secrets.POSTGRES_AUTH_DATABASE }}"
+              username: "${{ secrets.POSTGRES_AUTH_USERNAME }}"
+              password: "${{ secrets.POSTGRES_AUTH_PASSWORD }}"
+          postgresql-product:
+            auth:
+              postgresPassword: "${{ secrets.POSTGRES_PRODUCT_POSTGRES_PASSWORD }}"
+              database: "${{ secrets.POSTGRES_PRODUCT_DATABASE }}"
+              username: "${{ secrets.POSTGRES_PRODUCT_USERNAME }}"
+              password: "${{ secrets.POSTGRES_PRODUCT_PASSWORD }}"
+          secrets:
+            authApi:
+              jwtSecret: "${{ secrets.JWT_SECRET }}"
+          ingress:
+            className: "${{ secrets.INGRESS_CLASS_NAME }}"
+            annotations:
+              cert-manager.io/cluster-issuer: "${{ secrets.CERT_MANAGER_CLUSTER_ISSUER }}"
+            hosts:
+              - host: "${{ secrets.API_DOMAIN }}"
+                paths:
+                  - path: /
+                    pathType: Prefix
+              - host: "${{ secrets.APP_DOMAIN }}"
+                paths:
+                  - path: /
+                    pathType: Prefix
+            tls:
+              - secretName: api-tls
+                hosts:
+                  - "${{ secrets.API_DOMAIN }}"
+              - secretName: app-tls
+                hosts:
+                  - "${{ secrets.APP_DOMAIN }}"
+          EOF
+
+      - name: Deploy with Helm
+        run: |
+          cd aws-k8s-helm
+          helm upgrade --install my-app . \
+            --namespace production \
+            --create-namespace \
+            --values values.yaml \
+            --values values-production.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n production
+          kubectl get svc -n production
+          kubectl get ingress -n production
+
+      - name: Check pod status
+        run: |
+          sleep 30
+          kubectl get pods -n production
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=auth-api -n production --timeout=300s || true
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=product-api -n production --timeout=300s || true
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=gateway -n production --timeout=300s || true
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=ecommerce -n production --timeout=300s || true
+

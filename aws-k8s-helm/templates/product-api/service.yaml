@@ -1,0 +1,20 @@
+{{- if .Values.productApi.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.productApi.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: product-api
+spec:
+  type: {{ .Values.productApi.service.type }}
+  ports:
+    - port: {{ .Values.productApi.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "chart.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: product-api
+{{- end }}
+

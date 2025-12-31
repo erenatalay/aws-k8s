@@ -1,0 +1,18 @@
+apiVersion: v2
+name: aws-k8s-helm
+description: Production-ready microservices Helm chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: postgresql
+    version: 15.1.0
+    repository: https://charts.bitnami.com/bitnami
+    alias: postgresql-auth
+    condition: postgresql-auth.enabled
+  - name: postgresql
+    version: 15.1.0
+    repository: https://charts.bitnami.com/bitnami
+    alias: postgresql-product
+    condition: postgresql-product.enabled

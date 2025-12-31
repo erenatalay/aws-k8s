@@ -1,0 +1,61 @@
+{{- if .Values.productApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.productApi.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: product-api
+spec:
+  replicas: {{ .Values.productApi.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: product-api
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: product-api
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.productApi.name }}
+        {{- if .Values.global.imageRegistry }}
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.productApi.image.repository }}:{{ .Values.productApi.image.tag }}"
+        {{- else }}
+        image: "{{ .Values.productApi.image.repository }}:{{ .Values.productApi.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.productApi.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.productApi.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.productApi.env.NODE_ENV | quote }}
+        - name: PORT
+          value: {{ .Values.productApi.env.PORT | quote }}
+        - name: DATABASE_URL
+          value: "postgresql://{{ .Values.postgresql-product.auth.username }}:{{ .Values.postgresql-product.auth.password }}@{{ .Release.Name }}-postgresql-product:5432/{{ .Values.postgresql-product.auth.database }}?schema=public"
+        - name: AUTH_SERVICE_URL
+          value: {{ .Values.productApi.env.AUTH_SERVICE_URL | quote }}
+        - name: JWT_ISSUER
+          value: {{ .Values.productApi.env.JWT_ISSUER | quote }}
+        - name: JWT_AUDIENCE
+          value: {{ .Values.productApi.env.JWT_AUDIENCE | quote }}
+        {{- with .Values.productApi.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.productApi.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.productApi.resources | nindent 10 }}
+{{- end }}
+

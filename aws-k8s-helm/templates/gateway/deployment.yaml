@@ -1,0 +1,59 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.gateway.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gateway
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: gateway
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.gateway.name }}
+        {{- if .Values.global.imageRegistry }}
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+        {{- else }}
+        image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.gateway.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.gateway.env.NODE_ENV | quote }}
+        - name: PORT
+          value: {{ .Values.gateway.env.PORT | quote }}
+        - name: AUTH_GRAPHQL_URL
+          value: {{ .Values.gateway.env.AUTH_GRAPHQL_URL | quote }}
+        - name: PRODUCT_GRAPHQL_URL
+          value: {{ .Values.gateway.env.PRODUCT_GRAPHQL_URL | quote }}
+        - name: GRAPHQL_POLL_INTERVAL
+          value: {{ .Values.gateway.env.GRAPHQL_POLL_INTERVAL | quote }}
+        {{- with .Values.gateway.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.gateway.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.gateway.resources | nindent 10 }}
+{{- end }}
+

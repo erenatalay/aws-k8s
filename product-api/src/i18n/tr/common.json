@@ -5,7 +5,7 @@
   "user.password.success": "Şifre başarıyla değiştirildi",
   "swagger.title": "API",
   "swagger.description": "API dökümanları",
-  "app.welcome": "Afterlive çevrimiçi api servisi 1.0.0 versiyonu",
+  "app.welcome": "çevrimiçi api servisi 1.0.0 versiyonu",
   "api.auth.register.summary": "Kullanıcı kaydı",
   "api.auth.register.success": "Kayıt başarılı",
   "api.auth.login.summary": "Kullanıcı girişi",

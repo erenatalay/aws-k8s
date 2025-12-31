@@ -1,0 +1,23 @@
+{{- if and .Values.ecommerce.enabled .Values.ecommerce.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.ecommerce.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.ecommerce.name }}
+  minReplicas: {{ .Values.ecommerce.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.ecommerce.autoscaling.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.ecommerce.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+

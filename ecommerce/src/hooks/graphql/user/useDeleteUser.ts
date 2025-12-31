@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 
+import type { MessageResponse } from '@/graphql/generated/graphql';
 import { DELETE_USER } from '@/graphql/operations/auth';
-import type { MessageResponse } from '@/graphql/generated';
 
 type DeleteUserData = { deleteUser: MessageResponse };
 

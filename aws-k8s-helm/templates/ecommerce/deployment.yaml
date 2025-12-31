@@ -1,0 +1,59 @@
+{{- if .Values.ecommerce.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.ecommerce.name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ecommerce
+spec:
+  replicas: {{ .Values.ecommerce.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ecommerce
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ecommerce
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.ecommerce.name }}
+        {{- if .Values.global.imageRegistry }}
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.ecommerce.image.repository }}:{{ .Values.ecommerce.image.tag }}"
+        {{- else }}
+        image: "{{ .Values.ecommerce.image.repository }}:{{ .Values.ecommerce.image.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.ecommerce.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.ecommerce.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.ecommerce.env.NODE_ENV | quote }}
+        - name: PORT
+          value: {{ .Values.ecommerce.env.PORT | quote }}
+        - name: HOSTNAME
+          value: "0.0.0.0"
+        - name: NEXT_PUBLIC_AUTH_API_URL
+          value: {{ .Values.ecommerce.env.NEXT_PUBLIC_AUTH_API_URL | quote }}
+        - name: NEXT_PUBLIC_PRODUCT_API_URL
+          value: {{ .Values.ecommerce.env.NEXT_PUBLIC_PRODUCT_API_URL | quote }}
+        {{- with .Values.ecommerce.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.ecommerce.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.ecommerce.resources | nindent 10 }}
+{{- end }}
+
