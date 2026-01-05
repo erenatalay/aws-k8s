@@ -22,6 +22,10 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        fsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
       containers:
       - name: {{ .Values.productApi.name }}
         {{- if .Values.global.imageRegistry }}
@@ -40,13 +44,41 @@ spec:
         - name: PORT
           value: {{ .Values.productApi.env.PORT | quote }}
         - name: DATABASE_URL
-          value: "postgresql://{{ .Values.postgresql-product.auth.username }}:{{ .Values.postgresql-product.auth.password }}@{{ .Release.Name }}-postgresql-product:5432/{{ .Values.postgresql-product.auth.database }}?schema=public"
+          value: "postgresql://{{ index .Values "postgresql-product" "auth" "username" }}:{{ index .Values "postgresql-product" "auth" "password" }}@{{ .Release.Name }}-postgresql-product:5432/{{ index .Values "postgresql-product" "auth" "database" }}?schema=public"
         - name: AUTH_SERVICE_URL
           value: {{ .Values.productApi.env.AUTH_SERVICE_URL | quote }}
+        {{- if .Values.productApi.env.JWT_SECRET }}
+        - name: JWT_SECRET
+          value: {{ .Values.productApi.env.JWT_SECRET | quote }}
+        {{- end }}
         - name: JWT_ISSUER
           value: {{ .Values.productApi.env.JWT_ISSUER | quote }}
         - name: JWT_AUDIENCE
           value: {{ .Values.productApi.env.JWT_AUDIENCE | quote }}
+        {{- if .Values.productApi.env.API_PORT }}
+        - name: API_PORT
+          value: {{ .Values.productApi.env.API_PORT | quote }}
+        {{- end }}
+        {{- if .Values.productApi.env.API_GLOBAL_PREFIX }}
+        - name: API_GLOBAL_PREFIX
+          value: {{ .Values.productApi.env.API_GLOBAL_PREFIX | quote }}
+        {{- end }}
+        {{- if .Values.productApi.env.POSTGRES_USER }}
+        - name: POSTGRES_USER
+          value: {{ .Values.productApi.env.POSTGRES_USER | quote }}
+        {{- end }}
+        {{- if .Values.productApi.env.POSTGRES_PASSWORD }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.productApi.env.POSTGRES_PASSWORD | quote }}
+        {{- end }}
+        {{- if .Values.productApi.env.POSTGRES_DB }}
+        - name: POSTGRES_DB
+          value: {{ .Values.productApi.env.POSTGRES_DB | quote }}
+        {{- end }}
+        {{- if .Values.productApi.env.POSTGRES_PORT }}
+        - name: POSTGRES_PORT
+          value: {{ .Values.productApi.env.POSTGRES_PORT | quote }}
+        {{- end }}
         {{- with .Values.productApi.livenessProbe }}
         livenessProbe:
           {{- toYaml . | nindent 10 }}

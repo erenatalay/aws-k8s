@@ -10,22 +10,22 @@ authApi:
     repository: ""
     tag: ""
     pullPolicy: IfNotPresent
-  replicaCount: 2
+  replicaCount: 1
   service:
     type: ClusterIP
     port: 3000
     targetPort: 3000
   resources:
     limits:
-      cpu: 1000m
-      memory: 1Gi
-    requests:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 70
   env:
     NODE_ENV: production
@@ -58,22 +58,22 @@ productApi:
     repository: ""
     tag: ""
     pullPolicy: IfNotPresent
-  replicaCount: 2
+  replicaCount: 1
   service:
     type: ClusterIP
     port: 3001
     targetPort: 3001
   resources:
     limits:
-      cpu: 1000m
-      memory: 1Gi
-    requests:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 70
   env:
     NODE_ENV: production
@@ -105,22 +105,22 @@ gateway:
     repository: ""
     tag: ""
     pullPolicy: IfNotPresent
-  replicaCount: 2
+  replicaCount: 1
   service:
     type: ClusterIP
     port: 4000
     targetPort: 4000
   resources:
     limits:
-      cpu: 1000m
-      memory: 1Gi
-    requests:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 70
   env:
     NODE_ENV: production
@@ -152,22 +152,22 @@ ecommerce:
     repository: ""
     tag: ""
     pullPolicy: IfNotPresent
-  replicaCount: 2
+  replicaCount: 1
   service:
     type: ClusterIP
     port: 3002
     targetPort: 3002
   resources:
     limits:
-      cpu: 1000m
-      memory: 1Gi
-    requests:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 70
   env:
     NODE_ENV: production
@@ -201,15 +201,15 @@ postgresql-auth:
   primary:
     persistence:
       enabled: true
-      size: 20Gi
+      size: 8Gi
       storageClass: ""
     resources:
       requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
         memory: "512Mi"
         cpu: "500m"
-      limits:
-        memory: "1Gi"
-        cpu: "1000m"
 
 postgresql-product:
   enabled: true
@@ -221,18 +221,18 @@ postgresql-product:
   primary:
     persistence:
       enabled: true
-      size: 20Gi
+      size: 8Gi
       storageClass: ""
     resources:
       requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
         memory: "512Mi"
         cpu: "500m"
-      limits:
-        memory: "1Gi"
-        cpu: "1000m"
 
 ingress:
-  enabled: true
+  enabled: false
   className: ""
   annotations:
     cert-manager.io/cluster-issuer: ""

@@ -45,6 +45,10 @@ spec:
           value: {{ .Values.ecommerce.env.NEXT_PUBLIC_AUTH_API_URL | quote }}
         - name: NEXT_PUBLIC_PRODUCT_API_URL
           value: {{ .Values.ecommerce.env.NEXT_PUBLIC_PRODUCT_API_URL | quote }}
+        {{- if .Values.ecommerce.env.NEXT_PUBLIC_GRAPHQL_URL }}
+        - name: NEXT_PUBLIC_GRAPHQL_URL
+          value: {{ .Values.ecommerce.env.NEXT_PUBLIC_GRAPHQL_URL | quote }}
+        {{- end }}
         {{- with .Values.ecommerce.livenessProbe }}
         livenessProbe:
           {{- toYaml . | nindent 10 }}

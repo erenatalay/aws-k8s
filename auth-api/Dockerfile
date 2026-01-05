@@ -28,16 +28,20 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV DOCKER=true
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-# Copy the built application
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/generated ./generated
+# Copy the built application with proper ownership
+COPY --chown=nestjs:nodejs --from=builder /app/dist ./dist
+COPY --chown=nestjs:nodejs --from=builder /app/node_modules ./node_modules
+COPY --chown=nestjs:nodejs --from=builder /app/package.json ./package.json
+COPY --chown=nestjs:nodejs --from=builder /app/prisma ./prisma
+COPY --chown=nestjs:nodejs --from=builder /app/generated ./generated
+
+# Ensure /tmp directory is writable for GraphQL schema generation
+RUN chmod 1777 /tmp
 
 USER nestjs
 

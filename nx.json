@@ -4,8 +4,7 @@
     "plugins": {
       "@nx/eslint": "22.2.3",
       "@nx/jest": "22.2.3",
-      "@nx/next": "22.2.3",
-      "@nx/docker": "22.2.3"
+      "@nx/next": "22.2.3"
     }
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
@@ -13,18 +12,5 @@
     "serve": {
       "cache": false
     }
-  },
-  "plugins": [
-    {
-      "plugin": "@nx/docker",
-      "options": {
-        "buildTarget": {
-          "name": "docker:build"
-        },
-        "runTarget": {
-          "name": "docker:run"
-        }
-      }
-    }
-  ]
+  }
 }

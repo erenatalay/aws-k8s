@@ -22,6 +22,10 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        fsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
       containers:
       - name: {{ .Values.authApi.name }}
         {{- if .Values.global.imageRegistry }}
@@ -40,18 +44,57 @@ spec:
         - name: PORT
           value: {{ .Values.authApi.env.PORT | quote }}
         - name: DATABASE_URL
-          value: "postgresql://{{ .Values.postgresql-auth.auth.username }}:{{ .Values.postgresql-auth.auth.password }}@{{ .Release.Name }}-postgresql-auth:5432/{{ .Values.postgresql-auth.auth.database }}?schema=public"
+          value: "postgresql://{{ index .Values "postgresql-auth" "auth" "username" }}:{{ index .Values "postgresql-auth" "auth" "password" }}@{{ .Release.Name }}-postgresql-auth:5432/{{ index .Values "postgresql-auth" "auth" "database" }}?schema=public"
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: {{ .Values.authApi.name }}-secret
               key: jwt-secret
+        {{- if .Values.secrets.authApi.jwtRefreshSecret }}
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.authApi.name }}-secret
+              key: jwt-refresh-secret
+        {{- end }}
         - name: JWT_EXPIRES_IN
           value: {{ .Values.authApi.env.JWT_EXPIRES_IN | quote }}
         - name: JWT_ISSUER
           value: {{ .Values.authApi.env.JWT_ISSUER | quote }}
         - name: JWT_AUDIENCE
           value: {{ .Values.authApi.env.JWT_AUDIENCE | quote }}
+        {{- if .Values.authApi.env.JWT_REFRESH_EXPIRES_IN }}
+        - name: JWT_REFRESH_EXPIRES_IN
+          value: {{ .Values.authApi.env.JWT_REFRESH_EXPIRES_IN | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.PASSWORD_RESET_EXPIRES_IN }}
+        - name: PASSWORD_RESET_EXPIRES_IN
+          value: {{ .Values.authApi.env.PASSWORD_RESET_EXPIRES_IN | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.API_PORT }}
+        - name: API_PORT
+          value: {{ .Values.authApi.env.API_PORT | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.API_GLOBAL_PREFIX }}
+        - name: API_GLOBAL_PREFIX
+          value: {{ .Values.authApi.env.API_GLOBAL_PREFIX | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.POSTGRES_USER }}
+        - name: POSTGRES_USER
+          value: {{ .Values.authApi.env.POSTGRES_USER | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.POSTGRES_PASSWORD }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.authApi.env.POSTGRES_PASSWORD | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.POSTGRES_DB }}
+        - name: POSTGRES_DB
+          value: {{ .Values.authApi.env.POSTGRES_DB | quote }}
+        {{- end }}
+        {{- if .Values.authApi.env.POSTGRES_PORT }}
+        - name: POSTGRES_PORT
+          value: {{ .Values.authApi.env.POSTGRES_PORT | quote }}
+        {{- end }}
         {{- with .Values.authApi.livenessProbe }}
         livenessProbe:
           {{- toYaml . | nindent 10 }}

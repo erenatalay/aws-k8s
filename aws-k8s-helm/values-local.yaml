@@ -1,0 +1,98 @@
+# Local Minikube deployment için values dosyası
+# Kullanım: helm install my-app . --values values-local.yaml
+
+global:
+  imageRegistry: "docker.io"
+  storageClass: "standard"
+
+authApi:
+  image:
+    repository: "starlince/auth-api"
+    tag: "latest"
+  env:
+    JWT_EXPIRES_IN: "7d"
+    JWT_REFRESH_EXPIRES_IN: "7d"
+    PASSWORD_RESET_EXPIRES_IN: "15m"
+    JWT_AUDIENCE: "api-services"
+    JWT_ISSUER: "auth-service"
+    NODE_ENV: "production"
+    PORT: "3000"
+    API_PORT: "3001"
+    API_GLOBAL_PREFIX: "api"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "awsk8sauthapi"
+    POSTGRES_DB: "postgres"
+    POSTGRES_PORT: "5432"
+
+productApi:
+  image:
+    repository: "starlince/product-api"
+    tag: "latest"
+  env:
+    AUTH_SERVICE_URL: "http://auth-api:3000"
+    JWT_SECRET: "awsk8sauthapi5123251"
+    JWT_ISSUER: "auth-service"
+    JWT_AUDIENCE: "api-services"
+    NODE_ENV: "production"
+    PORT: "3001"
+    API_PORT: "3002"
+    API_GLOBAL_PREFIX: "api"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "awsk8sproductapi"
+    POSTGRES_DB: "postgres"
+    POSTGRES_PORT: "5432"
+
+gateway:
+  image:
+    repository: "starlince/gateway"
+    tag: "latest"
+  env:
+    AUTH_GRAPHQL_URL: "http://localhost:3001/api/graphql"
+    PRODUCT_GRAPHQL_URL: "http://localhost:3002/api/graphql"
+    GRAPHQL_POLL_INTERVAL: "10000"
+    PORT: "4000"
+    NODE_ENV: "development"
+
+ecommerce:
+  image:
+    repository: "starlince/ecommerce"
+    tag: "latest"
+  env:
+    NEXT_PUBLIC_AUTH_API_URL: "http://localhost:3000"
+    NEXT_PUBLIC_PRODUCT_API_URL: "http://localhost:3001"
+    NEXT_PUBLIC_GRAPHQL_URL: "http://localhost:4000/graphql"
+    NODE_ENV: "production"
+    PORT: "3002"
+
+postgresql-auth:
+  auth:
+    postgresPassword: "awsk8sauthapi"
+    database: "postgres"
+    username: "postgres"
+    password: "awsk8sauthapi"
+  image:
+    tag: "latest"
+  primary:
+    persistence:
+      storageClass: "standard"
+
+postgresql-product:
+  auth:
+    postgresPassword: "awsk8sproductapi"
+    database: "postgres"
+    username: "postgres"
+    password: "awsk8sproductapi"
+  image:
+    tag: "latest"
+  primary:
+    persistence:
+      storageClass: "standard"
+
+ingress:
+  enabled: false
+
+secrets:
+  authApi:
+    jwtSecret: "awsk8sauthapi5123251"
+    jwtRefreshSecret: "awsk8sauthapi5123251"
+

@@ -39,5 +39,8 @@
     "nx": "^22.2.3",
     "prettier": "^3.4.2",
     "typescript-eslint": "^8.18.0"
+  },
+  "dependencies": {
+    "@as-integrations/express5": "^1.1.2"
   }
 }

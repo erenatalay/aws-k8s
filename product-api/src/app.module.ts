@@ -50,12 +50,22 @@ import { SwaggerModule } from './swagger/swagger.module';
     ]),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
+      // Production/container ortamında her zaman yazılabilir bir dizine çıkart
       autoSchemaFile: {
-        path: join(process.cwd(), 'src/schema.gql'),
-        federation: 2,
+        path:
+          process.env.AUTO_SCHEMA_FILE ||
+          (process.env.NODE_ENV === 'production' ||
+          process.env.DOCKER === 'true' ||
+          process.cwd() === '/app'
+            ? '/tmp/schema.gql'
+            : join(process.cwd(), 'src/schema.gql')),
+        federation: {
+          version: 2,
+          importUrl: 'https://specs.apollo.dev/federation/v2.5',
+        },
       },
       sortSchema: true,
-      playground: true,
+      playground: process.env.NODE_ENV !== 'production',
       path: '/api/graphql',
       context: ({ req }) => ({ req }),
     }),
