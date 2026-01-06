@@ -23,6 +23,7 @@
     "@apollo/gateway": "^2.9.3",
     "@apollo/server": "^5.0.0",
     "@apollo/subgraph": "^2.12.2",
+    "@as-integrations/express5": "^1.0.0",
     "@nestjs/apollo": "^13.2.3",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",

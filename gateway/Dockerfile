@@ -14,12 +14,12 @@ RUN npm install --omit=dev --legacy-peer-deps
 FROM base AS builder
 WORKDIR /app
 COPY package.json package-lock.json* yarn.lock* ./
-# Tüm dependencies'i yükle (devDependencies dahil - build için gerekli)
-RUN npm install --legacy-peer-deps
+# Nest CLI'yi global yükle ve tüm dependencies'i yükle
+RUN npm install -g @nestjs/cli && npm install --legacy-peer-deps
 COPY . .
 
-# Build the application (npx kullanarak nest komutunu bul)
-RUN npx nest build || npm run build
+# Build the application
+RUN nest build
 
 # Production image, copy all the files and run the application
 FROM base AS runner
