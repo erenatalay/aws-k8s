@@ -18,6 +18,7 @@ spec:
         {{- include "chart.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: product-api
     spec:
+      serviceAccountName: {{ .Values.productApi.name }}-sa
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -26,6 +27,16 @@ spec:
         fsGroup: 1001
         runAsNonRoot: true
         runAsUser: 1001
+      {{- if .Values.productApi.initContainers.waitForDb.enabled }}
+      initContainers:
+      - name: wait-for-db
+        image: {{ .Values.productApi.initContainers.waitForDb.image }}
+        command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-postgresql-product 5432; do echo "Waiting for PostgreSQL..."; sleep 2; done; echo "PostgreSQL is ready!"']
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+      {{- end }}
       containers:
       - name: {{ .Values.productApi.name }}
         {{- if .Values.global.imageRegistry }}

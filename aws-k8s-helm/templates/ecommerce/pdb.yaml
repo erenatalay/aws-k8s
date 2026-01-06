@@ -1,0 +1,17 @@
+{{- if .Values.ecommerce.enabled }}
+{{- if .Values.ecommerce.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.ecommerce.name }}-pdb
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ecommerce
+spec:
+  minAvailable: {{ .Values.ecommerce.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ecommerce
+{{- end }}
+{{- end }}

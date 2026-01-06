@@ -1,0 +1,17 @@
+{{- if .Values.productApi.enabled }}
+{{- if .Values.productApi.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.productApi.name }}-pdb
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: product-api
+spec:
+  minAvailable: {{ .Values.productApi.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: product-api
+{{- end }}
+{{- end }}

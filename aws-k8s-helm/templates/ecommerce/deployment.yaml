@@ -18,6 +18,7 @@ spec:
         {{- include "chart.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: ecommerce
     spec:
+      serviceAccountName: {{ .Values.ecommerce.name }}-sa
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

@@ -1,0 +1,17 @@
+{{- if .Values.authApi.enabled }}
+{{- if .Values.authApi.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.authApi.name }}-pdb
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth-api
+spec:
+  minAvailable: {{ .Values.authApi.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auth-api
+{{- end }}
+{{- end }}

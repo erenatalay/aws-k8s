@@ -1,0 +1,52 @@
+{{- if .Values.authApi.enabled }}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.authApi.name }}-network-policy
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth-api
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auth-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Gateway'den gelen trafik
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: gateway
+      ports:
+        - protocol: TCP
+          port: {{ .Values.authApi.service.port }}
+    # Ecommerce'den gelen trafik
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: ecommerce
+      ports:
+        - protocol: TCP
+          port: {{ .Values.authApi.service.port }}
+  egress:
+    # PostgreSQL'e çıkış
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    # DNS çözümlemesi
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+{{- end }}
+{{- end }}

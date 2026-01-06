@@ -18,6 +18,7 @@ spec:
         {{- include "chart.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: gateway
     spec:
+      serviceAccountName: {{ .Values.gateway.name }}-sa
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

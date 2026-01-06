@@ -1,7 +1,9 @@
 {{- if .Values.ingress.enabled }}
 {{- range .Values.ingress.hosts }}
 {{- $host := .host }}
-{{- $isApiHost := hasPrefix "api" $host }}
+{{- $isApiHost := hasPrefix "api." $host }}
+{{- $isAuthHost := hasPrefix "auth." $host }}
+{{- $isProductHost := hasPrefix "product." $host }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -54,9 +56,23 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ if $isApiHost }}{{ $.Values.gateway.name }}{{ else }}{{ $.Values.ecommerce.name }}{{ end }}
+                {{- if $isApiHost }}
+                name: {{ $.Values.gateway.name }}
                 port:
-                  number: {{ if $isApiHost }}{{ $.Values.gateway.service.port }}{{ else }}{{ $.Values.ecommerce.service.port }}{{ end }}
+                  number: {{ $.Values.gateway.service.port }}
+                {{- else if $isAuthHost }}
+                name: {{ $.Values.authApi.name }}
+                port:
+                  number: {{ $.Values.authApi.service.port }}
+                {{- else if $isProductHost }}
+                name: {{ $.Values.productApi.name }}
+                port:
+                  number: {{ $.Values.productApi.service.port }}
+                {{- else }}
+                name: {{ $.Values.ecommerce.name }}
+                port:
+                  number: {{ $.Values.ecommerce.service.port }}
+                {{- end }}
           {{- end }}
 {{- end }}
 {{- end }}
