@@ -40,13 +40,17 @@ COPY --chown=nestjs:nodejs --from=builder /app/package.json ./package.json
 COPY --chown=nestjs:nodejs --from=builder /app/prisma ./prisma
 COPY --chown=nestjs:nodejs --from=builder /app/generated ./generated
 
+# Copy entrypoint script for Prisma migrations
+COPY --chown=nestjs:nodejs docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
 # Ensure /tmp directory is writable for GraphQL schema generation
 RUN chmod 1777 /tmp
 
 USER nestjs
 
-EXPOSE 3001
+EXPOSE 3002
 
-ENV PORT=3001
+ENV PORT=3002
 
-CMD ["npm", "run", "start:prod"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

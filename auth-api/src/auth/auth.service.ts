@@ -65,7 +65,6 @@ export class AuthService {
       },
     });
 
-    const activationCode = this.generateActivationCode();
     const hashedPassword = await this.hashingService.hashPassword(password);
 
     let user;
@@ -79,8 +78,8 @@ export class AuthService {
           password: hashedPassword,
           socialProvider: AuthProviderEnum.DEFAULT,
           deletedAt: null,
-          isActive: false,
-          activationCode,
+          isActive: true, // Email verification disabled - activate immediately
+          activationCode: null,
         },
       });
     } else {
@@ -91,18 +90,19 @@ export class AuthService {
           email,
           password: hashedPassword,
           socialProvider: AuthProviderEnum.DEFAULT,
-          isActive: false,
-          activationCode,
+          isActive: true, // Email verification disabled - activate immediately
+          activationCode: null,
         },
       });
     }
 
-    await this.mailService.userSignUp({
-      to: email,
-      data: {
-        hash: activationCode,
-      },
-    });
+    // Email verification disabled for now
+    // await this.mailService.userSignUp({
+    //   to: email,
+    //   data: {
+    //     hash: activationCode,
+    //   },
+    // });
 
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
