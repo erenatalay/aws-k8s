@@ -46,5 +46,7 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV COOKIE_SECURE=false
+ENV COOKIE_DOMAIN=.ecommerce.local
 
 CMD ["node", "server.js"]

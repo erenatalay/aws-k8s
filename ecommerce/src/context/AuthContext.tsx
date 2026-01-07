@@ -43,17 +43,34 @@ const COOKIE_CONFIG = {
   accessToken: {
     expires: 1,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    // Secure only in production with HTTPS, not for local Minikube (HTTP)
+    secure: false,
+    // Allow sharing across subdomains (ecommerce.local, api.ecommerce.local, etc.)
+    domain:
+      typeof window !== 'undefined' &&
+      window.location.hostname.includes('.local')
+        ? '.ecommerce.local'
+        : undefined,
   },
   refreshToken: {
     expires: 7,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
+    domain:
+      typeof window !== 'undefined' &&
+      window.location.hostname.includes('.local')
+        ? '.ecommerce.local'
+        : undefined,
   },
   user: {
     expires: 7,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
+    domain:
+      typeof window !== 'undefined' &&
+      window.location.hostname.includes('.local')
+        ? '.ecommerce.local'
+        : undefined,
   },
 } as const;
 
