@@ -1,0 +1,61 @@
+# ============================================================================
+# TERRAFORM GITIGNORE
+# ============================================================================
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files with secrets
+*.auto.tfvars
+*.auto.tfvars.json
+secrets.tfvars
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Lock file (optional - some teams commit this)
+# .terraform.lock.hcl
+
+# Plan files
+*.tfplan
+tfplan-*
+
+# Kubeconfig files
+.kube/
+*.kubeconfig
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+
+# Environment files
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log

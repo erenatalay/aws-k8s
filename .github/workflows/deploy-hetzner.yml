@@ -1,0 +1,337 @@
+# ============================================================================
+# GITHUB ACTIONS - HETZNER DEPLOYMENT WORKFLOW
+# CI/CD Pipeline for Hetzner Cloud Infrastructure
+# ============================================================================
+
+name: Deploy to Hetzner Cloud
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'terraform/**'
+      - 'aws-k8s-helm/**'
+      - 'auth-api/**'
+      - 'product-api/**'
+      - 'gateway/**'
+      - 'ecommerce/**'
+      - '.github/workflows/deploy-hetzner.yml'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: '1.6.0'
+  HELM_VERSION: '3.13.0'
+  KUBECTL_VERSION: '1.28.0'
+
+jobs:
+  # ============================================================================
+  # LINT & VALIDATE
+  # ============================================================================
+  validate:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        working-directory: terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Helm Lint
+        run: |
+          helm lint aws-k8s-helm/
+
+  # ============================================================================
+  # BUILD & PUSH DOCKER IMAGES
+  # ============================================================================
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        service:
+          - name: auth-api
+            context: ./auth-api
+          - name: product-api
+            context: ./product-api
+          - name: gateway
+            context: ./gateway
+          - name: ecommerce
+            context: ./ecommerce
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # TERRAFORM PLAN
+  # ============================================================================
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+        run: |
+          terraform plan \
+            -var-file="environments/${{ github.event.inputs.environment || 'staging' }}.tfvars" \
+            -out=tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.environment || 'staging' }}
+          path: terraform/tfplan
+
+  # ============================================================================
+  # TERRAFORM APPLY
+  # ============================================================================
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: [validate, build-images]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: terraform
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+          TF_VAR_postgresql_auth_password: ${{ secrets.POSTGRES_AUTH_PASSWORD }}
+          TF_VAR_postgresql_product_password: ${{ secrets.POSTGRES_PRODUCT_PASSWORD }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+        run: |
+          terraform apply \
+            -var-file="environments/${{ github.event.inputs.environment }}.tfvars" \
+            -auto-approve
+
+      - name: Get Outputs
+        id: outputs
+        working-directory: terraform
+        run: |
+          echo "load_balancer_ip=$(terraform output -raw load_balancer_ip)" >> $GITHUB_OUTPUT
+          echo "kubeconfig<<EOF" >> $GITHUB_OUTPUT
+          terraform output -raw kubeconfig_command >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Save Kubeconfig
+        working-directory: terraform
+        run: |
+          mkdir -p ~/.kube
+          # Kubeconfig will be generated by terraform
+
+  # ============================================================================
+  # HELM DEPLOY
+  # ============================================================================
+  helm-deploy:
+    name: Helm Deploy
+    runs-on: ubuntu-latest
+    needs: terraform-apply
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Configure Kubeconfig
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Update Helm Dependencies
+        working-directory: aws-k8s-helm
+        run: helm dependency update
+
+      - name: Deploy with Helm
+        working-directory: aws-k8s-helm
+        env:
+          POSTGRES_AUTH_PASSWORD: ${{ secrets.POSTGRES_AUTH_PASSWORD }}
+          POSTGRES_PRODUCT_PASSWORD: ${{ secrets.POSTGRES_PRODUCT_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          helm upgrade --install aws-k8s-helm . \
+            --namespace ${{ github.event.inputs.environment }} \
+            --create-namespace \
+            --values values-hetzner.yaml \
+            --set postgresql-auth.auth.postgresPassword="${POSTGRES_AUTH_PASSWORD}" \
+            --set postgresql-product.auth.postgresPassword="${POSTGRES_PRODUCT_PASSWORD}" \
+            --set authApi.env.JWT_SECRET="${JWT_SECRET}" \
+            --set productApi.env.JWT_SECRET="${JWT_SECRET}" \
+            --wait \
+            --timeout 10m
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods -n ${{ github.event.inputs.environment }}
+          kubectl get svc -n ${{ github.event.inputs.environment }}
+          kubectl get ingress -n ${{ github.event.inputs.environment }}
+
+  # ============================================================================
+  # TERRAFORM DESTROY
+  # ============================================================================
+  terraform-destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: terraform
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+        run: |
+          terraform destroy \
+            -var-file="environments/${{ github.event.inputs.environment }}.tfvars" \
+            -auto-approve
+
+  # ============================================================================
+  # NOTIFICATION
+  # ============================================================================
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [terraform-apply, helm-deploy]
+    if: always()
+    steps:
+      - name: Notify Slack
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "Deployment to ${{ github.event.inputs.environment }}: ${{ needs.helm-deploy.result }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Hetzner Deployment*\n*Environment:* ${{ github.event.inputs.environment }}\n*Status:* ${{ needs.helm-deploy.result }}\n*Branch:* ${{ github.ref_name }}\n*Actor:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

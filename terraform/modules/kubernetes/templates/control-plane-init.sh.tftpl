@@ -1,0 +1,69 @@
+#!/bin/bash
+# ============================================================================
+# K3S CONTROL PLANE NODE INITIALIZATION
+# ============================================================================
+
+set -e
+
+# System updates
+apt-get update
+apt-get upgrade -y
+apt-get install -y curl wget apt-transport-https ca-certificates gnupg lsb-release
+
+# Disable swap
+swapoff -a
+sed -i '/swap/d' /etc/fstab
+
+# Configure sysctl
+cat <<EOF | tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+sysctl --system
+
+# Install k3s
+export K3S_TOKEN="${k3s_token}"
+export INSTALL_K3S_VERSION="v${k3s_version}.0+k3s1"
+
+%{ if is_first_node }
+# First control plane node - Initialize the cluster
+curl -sfL https://get.k3s.io | sh -s - server \
+  --cluster-init \
+  --node-name="${node_name}" \
+  --node-ip="${node_ip}" \
+  --advertise-address="${node_ip}" \
+  --tls-san="${node_ip}" \
+  --tls-san="${cluster_name}.local" \
+  --disable=traefik \
+  --disable=servicelb \
+  --flannel-iface=ens10 \
+  --kube-apiserver-arg="enable-admission-plugins=NodeRestriction,PodSecurityPolicy" \
+  --kubelet-arg="cloud-provider=external"
+
+# Wait for k3s to be ready
+sleep 30
+
+# Install Hetzner Cloud Controller Manager
+kubectl apply -f https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm-networks.yaml
+
+# Install Hetzner CSI Driver
+kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/main/deploy/kubernetes/hcloud-csi.yml
+
+%{ else }
+# Additional control plane nodes - Join the cluster
+sleep 60  # Wait for first node to be ready
+
+curl -sfL https://get.k3s.io | sh -s - server \
+  --server="https://${first_node_ip}:6443" \
+  --node-name="${node_name}" \
+  --node-ip="${node_ip}" \
+  --advertise-address="${node_ip}" \
+  --tls-san="${node_ip}" \
+  --disable=traefik \
+  --disable=servicelb \
+  --flannel-iface=ens10 \
+  --kubelet-arg="cloud-provider=external"
+%{ endif }
+
+echo "K3s control plane node installation completed"

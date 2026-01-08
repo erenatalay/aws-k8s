@@ -4,3 +4,56 @@
 .nx/workspace-data
 node_modules
 .nx
+
+# ============================================================================
+# Terraform - Hassas Dosyalar
+# ============================================================================
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfplan
+terraform/.terraform.lock.hcl
+terraform/.kube/
+terraform/backup/
+
+# ============================================================================
+# Secrets - ASLA COMMIT ETME!
+# ============================================================================
+*.pem
+*.key
+**/secrets.yaml
+**/secrets.yml
+**/.env
+**/.env.*
+!**/.env.example
+
+# SSH Keys
+id_rsa
+id_ed25519
+*.pub
+
+# Kubeconfig
+kubeconfig
+.kube/
+
+# ============================================================================
+# OS & IDE
+# ============================================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ============================================================================
+# Build & Logs
+# ============================================================================
+dist/
+build/
+.next/
+*.log
+logs/
+tmp/
+temp/
+*.tmp
