@@ -254,7 +254,7 @@ postgresql-auth:
     resources:
       requests:
         memory: "256Mi"
-        cpu: "250m"
+        cpu: "100m"  # CPU yetersizliği için azaltıldı
       limits:
         memory: "512Mi"
         cpu: "500m"
@@ -276,7 +276,7 @@ postgresql-product:
     resources:
       requests:
         memory: "256Mi"
-        cpu: "250m"
+        cpu: "100m"  # CPU yetersizliği için azaltıldı
       limits:
         memory: "512Mi"
         cpu: "500m"

@@ -134,19 +134,19 @@ jobs:
           echo "Varsayılan storage class:"
           kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' || echo "Varsayılan storage class yok"
           
-      - name: Check Existing PVCs
+      - name: Check Cluster Resources
         run: |
-          echo "🔍 Mevcut PVC'ler kontrol ediliyor..."
-          kubectl get pvc -n ${{ env.DEPLOY_ENV }} || echo "PVC bulunamadı"
-          echo ""
-          echo "📋 PVC Detayları:"
-          for pvc in $(kubectl get pvc -n ${{ env.DEPLOY_ENV }} -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo ""); do
-            if [ -n "$pvc" ]; then
-              echo "PVC: $pvc"
-              kubectl get pvc "$pvc" -n ${{ env.DEPLOY_ENV }} -o jsonpath='  StorageClass: {.spec.storageClassName}{"\n"}  Status: {.status.phase}{"\n"}' || true
-              echo ""
-            fi
-          done
+          echo "## 📊 Cluster Kaynak Durumu" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Node Kaynakları:" >> $GITHUB_STEP_SUMMARY
+          kubectl top nodes 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "Metrics server yok, node kaynakları gösterilemiyor" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Node Detayları:" >> $GITHUB_STEP_SUMMARY
+          kubectl describe nodes | grep -A 5 "Allocated resources" >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "🔍 Cluster kaynakları kontrol ediliyor..."
+          kubectl get nodes -o custom-columns=NAME:.metadata.name,CPU:.status.capacity.cpu,MEMORY:.status.capacity.memory
 
       - name: Create namespace
         run: |
@@ -222,42 +222,6 @@ jobs:
           fi
           
           echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
-          
-          # Yanlış storage class ile oluşturulmuş PVC'leri kontrol et ve düzelt
-          echo "🔍 Mevcut PVC'ler kontrol ediliyor..."
-          for pvc_name in data-aws-k8s-helm-postgresql-auth-0 data-aws-k8s-helm-postgresql-product-0; do
-            if kubectl get pvc "$pvc_name" -n ${{ env.DEPLOY_ENV }} >/dev/null 2>&1; then
-              PVC_SC=$(kubectl get pvc "$pvc_name" -n ${{ env.DEPLOY_ENV }} -o jsonpath='{.spec.storageClassName}' 2>/dev/null || echo "")
-              PVC_STATUS=$(kubectl get pvc "$pvc_name" -n ${{ env.DEPLOY_ENV }} -o jsonpath='{.status.phase}' 2>/dev/null || echo "")
-              
-              if [ "$PVC_STATUS" = "Pending" ] && [ "$PVC_SC" != "${STORAGE_CLASS}" ] && [ "$PVC_SC" != "local-path" ]; then
-                echo "⚠️  PVC $pvc_name yanlış storage class ($PVC_SC) ile oluşturulmuş ve Pending durumunda."
-                echo "🔄 StatefulSet'i silip PVC'yi temizliyoruz..."
-                
-                # İlgili StatefulSet'i bul ve sil
-                # PVC format: data-aws-k8s-helm-postgresql-auth-0 -> StatefulSet: aws-k8s-helm-postgresql-auth
-                STS_NAME=$(echo "$pvc_name" | sed 's/data-\(.*\)-[0-9]*$/\1/')
-                echo "🔍 StatefulSet adı: $STS_NAME"
-                
-                if kubectl get statefulset "$STS_NAME" -n ${{ env.DEPLOY_ENV }} >/dev/null 2>&1; then
-                  echo "🗑️  StatefulSet $STS_NAME siliniyor..."
-                  kubectl delete statefulset "$STS_NAME" -n ${{ env.DEPLOY_ENV }} --cascade=orphan || true
-                  sleep 3
-                  echo "✅ StatefulSet silindi."
-                else
-                  echo "ℹ️  StatefulSet $STS_NAME bulunamadı, sadece PVC temizlenecek."
-                fi
-                
-                # PVC'yi sil (veri kaybı riski var ama Pending olduğu için zaten kullanılamıyor)
-                echo "🗑️  PVC $pvc_name siliniyor..."
-                kubectl delete pvc "$pvc_name" -n ${{ env.DEPLOY_ENV }} || true
-                sleep 2
-                echo "✅ PVC $pvc_name temizlendi, Helm doğru storage class ile yeniden oluşturacak."
-              elif [ "$PVC_STATUS" = "Pending" ]; then
-                echo "⚠️  PVC $pvc_name Pending durumunda (Storage Class: $PVC_SC). Kontrol ediliyor..."
-              fi
-            fi
-          done
           
           # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
           # Helm PostgreSQL'leri doğru storage class ile yönetecek
