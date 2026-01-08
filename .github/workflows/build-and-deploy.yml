@@ -1,0 +1,164 @@
+name: Build, Push and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do'
+        required: true
+        default: 'build-and-deploy'
+        type: choice
+        options:
+          - build-only
+          - deploy-only
+          - build-and-deploy
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  REGISTRY: docker.io
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+
+jobs:
+  # ============================================================================
+  # JOB 1: Build Images
+  # ============================================================================
+  build:
+    name: 'Build Docker Images'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action != 'deploy-only'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push auth-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth-api
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/auth-api:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/auth-api:latest
+
+      - name: Build and Push product-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./product-api
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/product-api:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/product-api:latest
+
+      - name: Build and Push gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./gateway
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/gateway:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/gateway:latest
+
+      - name: Build and Push ecommerce
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ecommerce
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
+
+  # ============================================================================
+  # JOB 2: Deploy to k3s (Build tamamlandıktan sonra)
+  # ============================================================================
+  deploy:
+    name: 'Deploy to k3s'
+    runs-on: ubuntu-latest
+    needs: [build]  # Build bittikten sonra başlar
+    if: always() && (github.event.inputs.action == 'deploy-only' || github.event.inputs.action == 'build-and-deploy') && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.13.0'
+
+      - name: Setup SSH and Kubeconfig
+        run: |
+          mkdir -p ~/.ssh ~/.kube
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          
+          MASTER_IP="${{ secrets.MASTER_IP }}"
+          ssh-keyscan -H $MASTER_IP >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Download kubeconfig from master
+          ssh -o StrictHostKeyChecking=no root@$MASTER_IP \
+            "cat /etc/rancher/k3s/k3s.yaml" | \
+            sed "s/127.0.0.1/$MASTER_IP/g" > ~/.kube/config
+          
+          chmod 600 ~/.kube/config
+
+      - name: Verify cluster connection
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ${{ github.event.inputs.environment }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Docker Registry Secret
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=docker.io \
+            --docker-username=${{ secrets.DOCKER_USERNAME }} \
+            --docker-password=${{ secrets.DOCKER_PASSWORD }} \
+            --namespace=${{ github.event.inputs.environment }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Helm Dependency Update
+        run: |
+          cd aws-k8s-helm
+          helm dependency update
+
+      - name: Helm Deploy
+        run: |
+          cd aws-k8s-helm
+          helm upgrade --install aws-k8s-helm . \
+            --namespace=${{ github.event.inputs.environment }} \
+            --values=values.yaml \
+            --values=values-local.yaml \
+            --set global.environment=${{ github.event.inputs.environment }} \
+            --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+            --set global.imageTag=${{ github.sha }} \
+            --wait \
+            --timeout=10m
+
+      - name: Verify Deployment
+        run: |
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n ${{ github.event.inputs.environment }} >> $GITHUB_STEP_SUMMARY
+          kubectl get svc -n ${{ github.event.inputs.environment }} >> $GITHUB_STEP_SUMMARY

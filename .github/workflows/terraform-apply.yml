@@ -1,11 +1,7 @@
 name: Terraform Apply
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'terraform/**'
-      - '.github/workflows/terraform-*.yml'
+  # Sadece manuel tetikleme - otomatik çalışmaz
   workflow_dispatch:
     inputs:
       action:
