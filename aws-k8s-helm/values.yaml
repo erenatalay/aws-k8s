@@ -4,7 +4,7 @@
 global:
   imageRegistry: "docker.io"
   imagePullSecrets: []
-  storageClass: "standard"
+  storageClass: "local-path"  # k3s için varsayılan storage class
 
 # Network Policy - Pod arası güvenlik
 networkPolicy:
@@ -250,7 +250,7 @@ postgresql-auth:
     persistence:
       enabled: true
       size: 8Gi
-      storageClass: "standard"
+      storageClass: "local-path"  # k3s için varsayılan storage class
     resources:
       requests:
         memory: "256Mi"
@@ -272,7 +272,7 @@ postgresql-product:
     persistence:
       enabled: true
       size: 8Gi
-      storageClass: "standard"
+      storageClass: "local-path"  # k3s için varsayılan storage class
     resources:
       requests:
         memory: "256Mi"

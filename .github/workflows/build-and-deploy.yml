@@ -125,6 +125,14 @@ jobs:
           kubectl get nodes
           # API server bağlantısını test et
           kubectl get namespaces --request-timeout=30s
+          
+      - name: Check Storage Classes
+        run: |
+          echo "📦 Mevcut Storage Classes:"
+          kubectl get storageclass || echo "Storage class bulunamadı"
+          echo ""
+          echo "Varsayılan storage class:"
+          kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' || echo "Varsayılan storage class yok"
 
       - name: Create namespace
         run: |
@@ -190,11 +198,23 @@ jobs:
           # Metrics server uyarılarını bastırmak için
           export KUBECTL_INTERACTIVE_TIMEOUT=30s
           
+          # Storage class'ı kontrol et ve ayarla
+          DEFAULT_STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || echo "")
+          if [ -z "$DEFAULT_STORAGE_CLASS" ]; then
+            # Varsayılan yoksa, ilk storage class'ı kullan veya local-path dene
+            STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "local-path")
+          else
+            STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
+          fi
+          
+          echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
+          
           # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
             --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+            --set global.storageClass="${STORAGE_CLASS}" \
             --set authApi.image.tag="${IMAGE_TAG}" \
             --set productApi.image.tag="${IMAGE_TAG}" \
             --set gateway.image.tag="${IMAGE_TAG}" \
@@ -204,8 +224,10 @@ jobs:
             --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --set postgresql-auth.auth.postgresPassword="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
             --set postgresql-auth.auth.password="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+            --set postgresql-auth.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set postgresql-product.auth.postgresPassword="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
             --set postgresql-product.auth.password="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+            --set postgresql-product.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
             --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
             --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
