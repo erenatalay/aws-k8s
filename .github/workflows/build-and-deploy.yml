@@ -142,18 +142,57 @@ jobs:
           cd aws-k8s-helm
           helm dependency update
 
+      - name: Verify Required Secrets
+        run: |
+          echo "🔐 Gerekli secrets kontrol ediliyor..."
+          REQUIRED_SECRETS=(
+            "AUTH_POSTGRES_PASSWORD"
+            "PRODUCT_POSTGRES_PASSWORD"
+            "JWT_SECRET"
+            "AUTH_JWT_SECRET"
+            "AUTH_JWT_REFRESH_SECRET"
+          )
+          
+          MISSING_SECRETS=()
+          for secret in "${REQUIRED_SECRETS[@]}"; do
+            if [[ -z "${!secret}" ]]; then
+              MISSING_SECRETS+=("$secret")
+            fi
+          done
+          
+          if [[ ${#MISSING_SECRETS[@]} -gt 0 ]]; then
+            echo "❌ Eksik secrets bulundu: ${MISSING_SECRETS[*]}"
+            echo "Lütfen GitHub Repository Settings > Secrets and variables > Actions bölümünden bu secrets'ları ekleyin."
+            exit 1
+          fi
+          
+          echo "✅ Tüm gerekli secrets mevcut"
+        env:
+          AUTH_POSTGRES_PASSWORD: ${{ secrets.AUTH_POSTGRES_PASSWORD }}
+          PRODUCT_POSTGRES_PASSWORD: ${{ secrets.PRODUCT_POSTGRES_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
+          AUTH_JWT_REFRESH_SECRET: ${{ secrets.AUTH_JWT_REFRESH_SECRET }}
+
       - name: Helm Deploy
         run: |
           cd aws-k8s-helm
           
-          # values-local.yaml git'e gitmediği için sadece values.yaml kullan
-          # Hassas bilgiler GitHub Secrets'tan gelecek
+          # values.yaml kullanılıyor, hassas bilgiler GitHub Secrets'tan gelecek
+          IMAGE_TAG="${{ github.sha }}"
+          
+          echo "🚀 Helm deployment başlatılıyor..."
+          echo "Image Tag: ${IMAGE_TAG}"
+          echo "Namespace: ${{ env.DEPLOY_ENV }}"
+          
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
-            --set global.environment=${{ env.DEPLOY_ENV }} \
             --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
-            --set global.imageTag=${{ github.sha }} \
+            --set authApi.image.tag="${IMAGE_TAG}" \
+            --set productApi.image.tag="${IMAGE_TAG}" \
+            --set gateway.image.tag="${IMAGE_TAG}" \
+            --set ecommerce.image.tag="${IMAGE_TAG}" \
             --set authApi.env.POSTGRES_PASSWORD="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
             --set productApi.env.POSTGRES_PASSWORD="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
             --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
@@ -166,7 +205,27 @@ jobs:
             --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
             --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}" \
             --wait \
-            --timeout=10m
+            --timeout=15m
+
+      - name: Check Pod Status
+        if: always()
+        run: |
+          echo "## 📊 Pod Durumları" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔍 Pod Detayları" >> $GITHUB_STEP_SUMMARY
+          kubectl describe pods -n ${{ env.DEPLOY_ENV }} >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Show Pod Logs (if failed)
+        if: failure()
+        run: |
+          echo "## 📋 Pod Logları (Hata Durumunda)" >> $GITHUB_STEP_SUMMARY
+          for pod in $(kubectl get pods -n ${{ env.DEPLOY_ENV }} -o jsonpath='{.items[*].metadata.name}'); do
+            echo "### Pod: $pod" >> $GITHUB_STEP_SUMMARY
+            kubectl logs -n ${{ env.DEPLOY_ENV }} $pod --tail=50 >> $GITHUB_STEP_SUMMARY 2>&1 || true
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
 
       - name: Verify Deployment
         run: |
