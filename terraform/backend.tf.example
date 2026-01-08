@@ -1,0 +1,16 @@
+# Terraform Cloud Backend
+# Bu dosyayı kullanmak için:
+# 1. https://app.terraform.io adresinden ücretsiz hesap aç
+# 2. Organization oluştur
+# 3. Workspace oluştur (CLI-driven workflow seç)
+# 4. Bu dosyadaki organization ve workspace adlarını güncelle
+
+terraform {
+  cloud {
+    organization = "YOUR_ORG_NAME"  # Terraform Cloud organization adın
+
+    workspaces {
+      name = "aws-k8s-helm-dev"  # Workspace adın
+    }
+  }
+}
