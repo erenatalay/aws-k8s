@@ -207,27 +207,15 @@ jobs:
             STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
           fi
           
-          echo "📦 Mevcut Storage Class: ${STORAGE_CLASS}"
-          
-          # Mevcut StatefulSet'leri kontrol et
-          AUTH_STS_EXISTS=$(kubectl get statefulset -n ${{ env.DEPLOY_ENV }} aws-k8s-helm-postgresql-auth -o name 2>/dev/null || echo "")
-          PRODUCT_STS_EXISTS=$(kubectl get statefulset -n ${{ env.DEPLOY_ENV }} aws-k8s-helm-postgresql-product -o name 2>/dev/null || echo "")
-          
-          if [ -n "$AUTH_STS_EXISTS" ] || [ -n "$PRODUCT_STS_EXISTS" ]; then
-            echo "⚠️  Mevcut StatefulSet'ler bulundu."
-            echo "ℹ️  StatefulSet storage class değiştirilemez, mevcut PVC'ler korunacak."
-            echo "ℹ️  Sadece diğer ayarlar güncellenecek, veriler korunacak."
-          else
-            echo "✅ Yeni deployment, values.yaml'daki storage class kullanılacak."
-          fi
+          echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
           
           # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
-          # ÖNEMLİ: StatefulSet storage class override yapılmıyor çünkü değiştirilemez
-          # Mevcut StatefulSet'ler varsa, storage class değişmeyecek ama veriler korunacak
+          # Helm PostgreSQL'leri doğru storage class ile yönetecek
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
             --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+            --set global.storageClass="${STORAGE_CLASS}" \
             --set authApi.image.tag="${IMAGE_TAG}" \
             --set productApi.image.tag="${IMAGE_TAG}" \
             --set gateway.image.tag="${IMAGE_TAG}" \
@@ -237,8 +225,10 @@ jobs:
             --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --set postgresql-auth.auth.postgresPassword="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
             --set postgresql-auth.auth.password="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+            --set postgresql-auth.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set postgresql-product.auth.postgresPassword="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
             --set postgresql-product.auth.password="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+            --set postgresql-product.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
             --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
             --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
