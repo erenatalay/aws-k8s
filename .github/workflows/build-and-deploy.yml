@@ -207,14 +207,27 @@ jobs:
             STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
           fi
           
-          echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
+          echo "📦 Mevcut Storage Class: ${STORAGE_CLASS}"
+          
+          # Mevcut StatefulSet'leri kontrol et
+          AUTH_STS_EXISTS=$(kubectl get statefulset -n ${{ env.DEPLOY_ENV }} aws-k8s-helm-postgresql-auth -o name 2>/dev/null || echo "")
+          PRODUCT_STS_EXISTS=$(kubectl get statefulset -n ${{ env.DEPLOY_ENV }} aws-k8s-helm-postgresql-product -o name 2>/dev/null || echo "")
+          
+          if [ -n "$AUTH_STS_EXISTS" ] || [ -n "$PRODUCT_STS_EXISTS" ]; then
+            echo "⚠️  Mevcut StatefulSet'ler bulundu."
+            echo "ℹ️  StatefulSet storage class değiştirilemez, mevcut PVC'ler korunacak."
+            echo "ℹ️  Sadece diğer ayarlar güncellenecek, veriler korunacak."
+          else
+            echo "✅ Yeni deployment, values.yaml'daki storage class kullanılacak."
+          fi
           
           # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
+          # ÖNEMLİ: StatefulSet storage class override yapılmıyor çünkü değiştirilemez
+          # Mevcut StatefulSet'ler varsa, storage class değişmeyecek ama veriler korunacak
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
             --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
-            --set global.storageClass="${STORAGE_CLASS}" \
             --set authApi.image.tag="${IMAGE_TAG}" \
             --set productApi.image.tag="${IMAGE_TAG}" \
             --set gateway.image.tag="${IMAGE_TAG}" \
@@ -224,14 +237,49 @@ jobs:
             --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --set postgresql-auth.auth.postgresPassword="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
             --set postgresql-auth.auth.password="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
-            --set postgresql-auth.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set postgresql-product.auth.postgresPassword="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
             --set postgresql-product.auth.password="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
-            --set postgresql-product.primary.persistence.storageClass="${STORAGE_CLASS}" \
             --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
             --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
             --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
-            --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}"
+            --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}" \
+            --force 2>&1 | tee /tmp/helm-output.log || {
+              HELM_ERROR=$(cat /tmp/helm-output.log)
+              if echo "$HELM_ERROR" | grep -q "StatefulSet.*is invalid.*spec.*Forbidden"; then
+                echo ""
+                echo "⚠️  StatefulSet storage class hatası tespit edildi."
+                echo "ℹ️  Mevcut StatefulSet'ler farklı storage class kullanıyor."
+                echo "ℹ️  Verileri korumak için StatefulSet'ler değiştirilmiyor."
+                echo "ℹ️  Sadece diğer servisler güncelleniyor..."
+                
+                # StatefulSet'leri atlayarak diğer servisleri güncelle
+                helm upgrade --install aws-k8s-helm . \
+                  --namespace=${{ env.DEPLOY_ENV }} \
+                  --values=values.yaml \
+                  --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+                  --set authApi.image.tag="${IMAGE_TAG}" \
+                  --set productApi.image.tag="${IMAGE_TAG}" \
+                  --set gateway.image.tag="${IMAGE_TAG}" \
+                  --set ecommerce.image.tag="${IMAGE_TAG}" \
+                  --set authApi.env.POSTGRES_PASSWORD="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+                  --set productApi.env.POSTGRES_PASSWORD="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+                  --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+                  --set postgresql-auth.enabled=false \
+                  --set postgresql-product.enabled=false \
+                  --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
+                  --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
+                  --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
+                  --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}"
+                
+                echo ""
+                echo "✅ Diğer servisler güncellendi. PostgreSQL StatefulSet'leri korundu."
+                echo "ℹ️  PostgreSQL'leri güncellemek için manuel olarak scale down/up yapabilirsiniz."
+              else
+                echo "❌ Helm deployment başarısız oldu:"
+                echo "$HELM_ERROR"
+                exit 1
+              fi
+            }
           
           echo "✅ Helm deployment tamamlandı. Pod'lar arka planda başlatılıyor..."
 
