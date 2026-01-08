@@ -36,8 +36,8 @@ authApi:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 50m      # Test amaçlı minimum (250m'den)
+      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -98,8 +98,8 @@ productApi:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 50m      # Test amaçlı minimum (250m'den)
+      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -155,8 +155,8 @@ gateway:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 50m      # Test amaçlı minimum (250m'den)
+      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -205,8 +205,8 @@ ecommerce:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 50m      # Test amaçlı minimum (250m'den)
+      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -253,8 +253,8 @@ postgresql-auth:
       storageClass: "local-path"  # k3s için varsayılan storage class
     resources:
       requests:
-        memory: "256Mi"
-        cpu: "100m"  # CPU yetersizliği için azaltıldı
+        memory: "128Mi"  # Test amaçlı minimum (256Mi'den)
+        cpu: "50m"       # Test amaçlı minimum (100m'den)
       limits:
         memory: "512Mi"
         cpu: "500m"
@@ -275,8 +275,8 @@ postgresql-product:
       storageClass: "local-path"  # k3s için varsayılan storage class
     resources:
       requests:
-        memory: "256Mi"
-        cpu: "100m"  # CPU yetersizliği için azaltıldı
+        memory: "128Mi"  # Test amaçlı minimum (256Mi'den)
+        cpu: "50m"       # Test amaçlı minimum (100m'den)
       limits:
         memory: "512Mi"
         cpu: "500m"
