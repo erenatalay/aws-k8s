@@ -1,0 +1,323 @@
+# Production deployment için values dosyası
+# Kullanım: helm install my-app . --values values.yaml
+
+global:
+  imageRegistry: "docker.io"
+  imagePullSecrets: []
+  storageClass: "standard"
+
+# Network Policy - Pod arası güvenlik
+networkPolicy:
+  enabled: false
+
+authApi:
+  enabled: true
+  name: auth-api
+  image:
+    repository: "starlince/auth-api"
+    tag: "latest"
+    pullPolicy: "Always"
+  replicaCount: 1
+  # Pod Disruption Budget - Yüksek erişilebilirlik
+  pdb:
+    enabled: false
+    minAvailable: 1
+  # Init Container - DB hazır olana kadar bekle
+  initContainers:
+    waitForDb:
+      enabled: true
+      image: busybox:1.36
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  env:
+    JWT_EXPIRES_IN: "7d"
+    JWT_REFRESH_EXPIRES_IN: "7d"
+    PASSWORD_RESET_EXPIRES_IN: "15m"
+    JWT_AUDIENCE: "api-services"
+    JWT_ISSUER: "auth-service"
+    NODE_ENV: "production"
+    PORT: "3001"
+    API_PORT: "3001"
+    API_GLOBAL_PREFIX: "api"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: ""  # GitHub Secrets'tan gelecek
+    POSTGRES_DB: "postgres"
+    POSTGRES_PORT: "5432"
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3001
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+productApi:
+  enabled: true
+  name: product-api
+  image:
+    repository: "starlince/product-api"
+    tag: "latest"
+    pullPolicy: "Always"
+  replicaCount: 1
+  pdb:
+    enabled: false
+    minAvailable: 1
+  initContainers:
+    waitForDb:
+      enabled: true
+      image: busybox:1.36
+  service:
+    type: ClusterIP
+    port: 3002
+    targetPort: 3002
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  env:
+    AUTH_SERVICE_URL: "http://auth-api:3001"
+    JWT_SECRET: ""  # GitHub Secrets'tan gelecek
+    JWT_ISSUER: "auth-service"
+    JWT_AUDIENCE: "api-services"
+    NODE_ENV: "production"
+    PORT: "3002"
+    API_PORT: "3002"
+    API_GLOBAL_PREFIX: "api"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: ""  # GitHub Secrets'tan gelecek
+    POSTGRES_DB: "postgres"
+    POSTGRES_PORT: "5432"
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3002
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3002
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+gateway:
+  enabled: true
+  name: gateway
+  image:
+    repository: "starlince/gateway"
+    tag: "latest"
+    pullPolicy: "Always"
+  replicaCount: 1
+  pdb:
+    enabled: false
+    minAvailable: 1
+  service:
+    type: ClusterIP
+    port: 4000
+    targetPort: 4000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  env:
+    AUTH_GRAPHQL_URL: "http://auth-api:3001/api/graphql"
+    PRODUCT_GRAPHQL_URL: "http://product-api:3002/api/graphql"
+    GRAPHQL_POLL_INTERVAL: "10000"
+    PORT: "4000"
+    NODE_ENV: "production"
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 4000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 4000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+ecommerce:
+  enabled: true
+  name: ecommerce
+  image:
+    repository: "starlince/ecommerce"
+    tag: "latest"
+    pullPolicy: "Always"
+  replicaCount: 1
+  pdb:
+    enabled: false
+    minAvailable: 1
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  env:
+    NEXT_PUBLIC_AUTH_API_URL: "http://auth.ecommerce.local"
+    NEXT_PUBLIC_PRODUCT_API_URL: "http://product.ecommerce.local"
+    NEXT_PUBLIC_GRAPHQL_URL: "http://api.ecommerce.local/graphql"
+    COOKIE_DOMAIN: ".ecommerce.local"
+    COOKIE_SECURE: "false"
+    NODE_ENV: "production"
+    PORT: "3000"
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+postgresql-auth:
+  enabled: true
+  auth:
+    postgresPassword: ""  # GitHub Secrets'tan gelecek
+    database: "postgres"
+    username: "postgres"
+    password: ""  # GitHub Secrets'tan gelecek
+  image:
+    tag: "latest"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: "standard"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+postgresql-product:
+  enabled: true
+  auth:
+    postgresPassword: ""  # GitHub Secrets'tan gelecek
+    database: "postgres"
+    username: "postgres"
+    password: ""  # GitHub Secrets'tan gelecek
+  image:
+    tag: "latest"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: "standard"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    cert-manager.io/cluster-issuer: ""
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    # Frontend - ecommerce
+    - host: "ecommerce.local"
+      paths:
+        - path: /
+          pathType: Prefix
+    # API Gateway - GraphQL
+    - host: "api.ecommerce.local"
+      paths:
+        - path: /
+          pathType: Prefix
+    # Auth API - Swagger & REST
+    - host: "auth.ecommerce.local"
+      paths:
+        - path: /
+          pathType: Prefix
+    # Product API - Swagger & REST
+    - host: "product.ecommerce.local"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+secrets:
+  authApi:
+    jwtSecret: ""  # GitHub Secrets'tan gelecek
+    jwtRefreshSecret: ""  # GitHub Secrets'tan gelecek
+    databaseUrl: ""  # GitHub Secrets'tan gelecek
+
+  productApi:
+    databaseUrl: ""  # GitHub Secrets'tan gelecek

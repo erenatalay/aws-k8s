@@ -145,13 +145,26 @@ jobs:
       - name: Helm Deploy
         run: |
           cd aws-k8s-helm
+          
+          # values-local.yaml git'e gitmediği için sadece values.yaml kullan
+          # Hassas bilgiler GitHub Secrets'tan gelecek
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
-            --values=values-local.yaml \
             --set global.environment=${{ env.DEPLOY_ENV }} \
             --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
             --set global.imageTag=${{ github.sha }} \
+            --set authApi.env.POSTGRES_PASSWORD="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+            --set productApi.env.POSTGRES_PASSWORD="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+            --set productApi.env.JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --set postgresql-auth.auth.postgresPassword="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+            --set postgresql-auth.auth.password="${{ secrets.AUTH_POSTGRES_PASSWORD }}" \
+            --set postgresql-product.auth.postgresPassword="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+            --set postgresql-product.auth.password="${{ secrets.PRODUCT_POSTGRES_PASSWORD }}" \
+            --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
+            --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
+            --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
+            --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}" \
             --wait \
             --timeout=10m
 
