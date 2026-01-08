@@ -4,12 +4,6 @@ on:
   # Push'ta otomatik çalışır
   push:
     branches: [main, master]
-    paths:
-      - 'auth-api/**'
-      - 'product-api/**'
-      - 'gateway/**'
-      - 'ecommerce/**'
-      - 'aws-k8s-helm/**'
   # Manuel de çalıştırılabilir
   workflow_dispatch:
     inputs:
@@ -22,19 +16,11 @@ on:
           - build-only
           - deploy-only
           - build-and-deploy
-      environment:
-        description: 'Environment'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - production
 
 env:
   REGISTRY: docker.io
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  ENVIRONMENT: dev
 
 jobs:
   # ============================================================================
@@ -43,7 +29,8 @@ jobs:
   build:
     name: 'Build Docker Images'
     runs-on: ubuntu-latest
-    if: github.event.inputs.action != 'deploy-only'
+    # Push'ta veya manuel build-and-deploy/build-only seçildiğinde çalışır
+    if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
     
     steps:
       - name: Checkout
