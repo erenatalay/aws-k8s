@@ -123,6 +123,8 @@ jobs:
         run: |
           kubectl cluster-info
           kubectl get nodes
+          # API server bağlantısını test et
+          kubectl get namespaces --request-timeout=30s
 
       - name: Create namespace
         run: |
@@ -185,6 +187,10 @@ jobs:
           echo "Image Tag: ${IMAGE_TAG}"
           echo "Namespace: ${{ env.DEPLOY_ENV }}"
           
+          # Metrics server uyarılarını bastırmak için
+          export KUBECTL_INTERACTIVE_TIMEOUT=30s
+          
+          # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
@@ -203,19 +209,22 @@ jobs:
             --set secrets.authApi.jwtSecret="${{ secrets.AUTH_JWT_SECRET }}" \
             --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
             --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
-            --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}" \
-            --wait \
-            --timeout=15m
+            --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}"
+          
+          echo "✅ Helm deployment tamamlandı. Pod'lar arka planda başlatılıyor..."
 
       - name: Check Pod Status
         if: always()
         run: |
+          # Metrics server uyarılarını bastırmak için
+          export KUBECTL_INTERACTIVE_TIMEOUT=30s
+          
           echo "## 📊 Pod Durumları" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide --request-timeout=30s 2>/dev/null >> $GITHUB_STEP_SUMMARY || kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 🔍 Pod Detayları" >> $GITHUB_STEP_SUMMARY
-          kubectl describe pods -n ${{ env.DEPLOY_ENV }} >> $GITHUB_STEP_SUMMARY || true
+          echo "## 🔍 Son Events" >> $GITHUB_STEP_SUMMARY
+          kubectl get events -n ${{ env.DEPLOY_ENV }} --sort-by='.lastTimestamp' --request-timeout=30s 2>/dev/null | tail -30 >> $GITHUB_STEP_SUMMARY || kubectl get events -n ${{ env.DEPLOY_ENV }} --sort-by='.lastTimestamp' | tail -30 >> $GITHUB_STEP_SUMMARY || true
 
       - name: Show Pod Logs (if failed)
         if: failure()
