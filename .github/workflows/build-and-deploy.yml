@@ -20,7 +20,7 @@ on:
 env:
   REGISTRY: docker.io
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  ENVIRONMENT: dev
+  ENVIRONMENT: production
 
 jobs:
   # ============================================================================
@@ -87,7 +87,7 @@ jobs:
     needs: [build]  # Build bittikten sonra başlar
     if: always() && needs.build.result == 'success'
     env:
-      DEPLOY_ENV: ${{ github.event.inputs.environment || 'dev' }}
+      DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
     
     steps:
       - name: Checkout
