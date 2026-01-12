@@ -43,9 +43,9 @@ const COOKIE_CONFIG = {
   accessToken: {
     expires: 1,
     sameSite: 'lax' as const,
-    // Secure only in production with HTTPS, not for local Minikube (HTTP)
+
     secure: false,
-    // Allow sharing across subdomains (ecommerce.local, api.ecommerce.local, etc.)
+
     domain:
       typeof window !== 'undefined' &&
       window.location.hostname.includes('.local')
@@ -89,23 +89,19 @@ function decodeToken(token: string): { exp: number; id: string } | null {
   }
 }
 
-/**
- * Token'ın geçerli olup olmadığını kontrol et
- */
+
 function checkTokenValidity(token: string | undefined): boolean {
   if (!token) return false;
 
   const payload = decodeToken(token);
   if (!payload?.exp) return false;
 
-  // 5 dakika buffer ekle (token expire olmadan önce yenile)
+
   const bufferMs = 5 * 60 * 1000;
   return Date.now() < payload.exp * 1000 - bufferMs;
 }
 
-/**
- * Cookie'den user'ı parse et
- */
+
 function parseUserFromCookie(): User | null {
   try {
     const storedUser = Cookies.get(COOKIE_KEYS.user);
@@ -125,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  // Initialize auth state from cookies
+
   useEffect(() => {
     const initializeAuth = () => {
       const accessToken = Cookies.get(COOKIE_KEYS.accessToken);
@@ -156,9 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     Cookies.remove(COOKIE_KEYS.user);
   }, []);
 
-  // Login handler
+
   const login = useCallback((user: User, tokens: AuthTokens) => {
-    // Set cookies
+
     Cookies.set(COOKIE_KEYS.user, JSON.stringify(user), COOKIE_CONFIG.user);
     Cookies.set(
       COOKIE_KEYS.accessToken,
@@ -188,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/login');
   }, [clearAuthData, router]);
 
-  // Update user data
+
   const updateUser = useCallback((updates: Partial<User>) => {
     setState((prev) => {
       if (!prev.user) return prev;
@@ -230,9 +226,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// ============================================
-// Hook
-// ============================================
+
+
+
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);

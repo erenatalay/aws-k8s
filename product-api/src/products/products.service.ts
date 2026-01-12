@@ -18,8 +18,7 @@ export class ProductsService {
     private readonly i18nService: I18nService,
   ) {}
 
-  /**
-   */
+
   async create(
     createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {

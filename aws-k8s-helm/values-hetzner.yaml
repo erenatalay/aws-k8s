@@ -1,20 +1,20 @@
-# ============================================================================
-# HETZNER CLOUD PRODUCTION VALUES
-# Production deployment on Hetzner Cloud k3s cluster
-# ============================================================================
+
+
+
+
 
 global:
   imageRegistry: "docker.io"
   imagePullSecrets: []
-  storageClass: "hcloud-volumes"  # Hetzner CSI storage class
+  storageClass: "hcloud-volumes"
 
-# Network Policy - Enable for production security
+
 networkPolicy:
   enabled: true
 
-# ============================================================================
-# AUTH API
-# ============================================================================
+
+
+
 authApi:
   enabled: true
   name: auth-api
@@ -23,23 +23,23 @@ authApi:
     tag: "latest"
     pullPolicy: "Always"
   replicaCount: 2
-  
-  # Pod Disruption Budget - HA için
+
+
   pdb:
     enabled: true
     minAvailable: 1
-  
-  # Init Container - DB hazır olana kadar bekle
+
+
   initContainers:
     waitForDb:
       enabled: true
       image: busybox:1.36
-  
+
   service:
     type: ClusterIP
     port: 3001
     targetPort: 3001
-  
+
   resources:
     limits:
       cpu: 1000m
@@ -47,14 +47,14 @@ authApi:
     requests:
       cpu: 500m
       memory: 512Mi
-  
+
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
     targetMemoryUtilizationPercentage: 80
-  
+
   env:
     NODE_ENV: "production"
     PORT: "3001"
@@ -68,14 +68,14 @@ authApi:
     POSTGRES_USER: "postgres"
     POSTGRES_DB: "auth"
     POSTGRES_PORT: "5432"
-    # POSTGRES_PASSWORD: Set via secret
-    # JWT_SECRET: Set via secret
-  
-  # Secrets from Kubernetes Secret
+
+
+
+
   envFrom:
     - secretRef:
         name: auth-api-secrets
-  
+
   livenessProbe:
     httpGet:
       path: /api/health
@@ -84,7 +84,7 @@ authApi:
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
-  
+
   readinessProbe:
     httpGet:
       path: /api/health
@@ -93,8 +93,8 @@ authApi:
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 3
-  
-  # Pod Anti-Affinity - Spread across nodes
+
+
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -105,9 +105,9 @@ authApi:
                 app: auth-api
             topologyKey: kubernetes.io/hostname
 
-# ============================================================================
-# PRODUCT API
-# ============================================================================
+
+
+
 productApi:
   enabled: true
   name: product-api
@@ -116,21 +116,21 @@ productApi:
     tag: "latest"
     pullPolicy: "Always"
   replicaCount: 2
-  
+
   pdb:
     enabled: true
     minAvailable: 1
-  
+
   initContainers:
     waitForDb:
       enabled: true
       image: busybox:1.36
-  
+
   service:
     type: ClusterIP
     port: 3002
     targetPort: 3002
-  
+
   resources:
     limits:
       cpu: 1000m
@@ -138,14 +138,14 @@ productApi:
     requests:
       cpu: 500m
       memory: 512Mi
-  
+
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
     targetMemoryUtilizationPercentage: 80
-  
+
   env:
     NODE_ENV: "production"
     PORT: "3002"
@@ -157,11 +157,11 @@ productApi:
     POSTGRES_USER: "postgres"
     POSTGRES_DB: "product"
     POSTGRES_PORT: "5432"
-  
+
   envFrom:
     - secretRef:
         name: product-api-secrets
-  
+
   livenessProbe:
     httpGet:
       path: /api/health
@@ -170,7 +170,7 @@ productApi:
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
-  
+
   readinessProbe:
     httpGet:
       path: /api/health
@@ -179,7 +179,7 @@ productApi:
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 3
-  
+
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -190,9 +190,9 @@ productApi:
                 app: product-api
             topologyKey: kubernetes.io/hostname
 
-# ============================================================================
-# GATEWAY
-# ============================================================================
+
+
+
 gateway:
   enabled: true
   name: gateway
@@ -201,16 +201,16 @@ gateway:
     tag: "latest"
     pullPolicy: "Always"
   replicaCount: 2
-  
+
   pdb:
     enabled: true
     minAvailable: 1
-  
+
   service:
     type: ClusterIP
     port: 3000
     targetPort: 3000
-  
+
   resources:
     limits:
       cpu: 500m
@@ -218,26 +218,26 @@ gateway:
     requests:
       cpu: 250m
       memory: 256Mi
-  
+
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
-  
+
   env:
     NODE_ENV: "production"
     PORT: "3000"
     AUTH_API_URL: "http://auth-api:3001"
     PRODUCT_API_URL: "http://product-api:3002"
-  
+
   livenessProbe:
     httpGet:
       path: /health
       port: 3000
     initialDelaySeconds: 15
     periodSeconds: 10
-  
+
   readinessProbe:
     httpGet:
       path: /health
@@ -245,9 +245,9 @@ gateway:
     initialDelaySeconds: 5
     periodSeconds: 5
 
-# ============================================================================
-# ECOMMERCE FRONTEND
-# ============================================================================
+
+
+
 ecommerce:
   enabled: true
   name: ecommerce
@@ -256,16 +256,16 @@ ecommerce:
     tag: "latest"
     pullPolicy: "Always"
   replicaCount: 2
-  
+
   pdb:
     enabled: true
     minAvailable: 1
-  
+
   service:
     type: ClusterIP
     port: 3000
     targetPort: 3000
-  
+
   resources:
     limits:
       cpu: 500m
@@ -273,25 +273,25 @@ ecommerce:
     requests:
       cpu: 250m
       memory: 256Mi
-  
+
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
-  
+
   env:
     NODE_ENV: "production"
     NEXT_PUBLIC_API_URL: "https://api.yourcompany.com"
     NEXT_PUBLIC_GATEWAY_URL: "https://gateway.yourcompany.com"
-  
+
   livenessProbe:
     httpGet:
       path: /api/health
       port: 3000
     initialDelaySeconds: 20
     periodSeconds: 10
-  
+
   readinessProbe:
     httpGet:
       path: /api/health
@@ -299,9 +299,9 @@ ecommerce:
     initialDelaySeconds: 10
     periodSeconds: 5
 
-# ============================================================================
-# INGRESS (NGINX Ingress Controller)
-# ============================================================================
+
+
+
 ingress:
   enabled: true
   className: nginx
@@ -311,39 +311,39 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  
-  # Production domain yapılandırması
-  # hosts:
-  #   - host: api.yourcompany.com
-  #     paths:
-  #       - path: /
-  #         pathType: Prefix
-  #         backend: auth-api
-  #   - host: gateway.yourcompany.com
-  #     paths:
-  #       - path: /
-  #         pathType: Prefix
-  #         backend: gateway
-  #   - host: app.yourcompany.com
-  #     paths:
-  #       - path: /
-  #         pathType: Prefix
-  #         backend: ecommerce
-  
-  # tls:
-  #   - secretName: production-tls
-  #     hosts:
-  #       - api.yourcompany.com
-  #       - gateway.yourcompany.com
-  #       - app.yourcompany.com
 
-# ============================================================================
-# POSTGRESQL - AUTH
-# ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 postgresql-auth:
   enabled: true
   auth:
-    postgresPassword: ""  # Set via --set or secret
+    postgresPassword: ""
     username: postgres
     database: auth
   primary:
@@ -359,7 +359,7 @@ postgresql-auth:
         cpu: 500m
         memory: 512Mi
     nodeSelector:
-      workload-type: database  # Use dedicated database nodes
+      workload-type: database
     tolerations:
       - key: "database"
         operator: "Equal"
@@ -370,13 +370,13 @@ postgresql-auth:
     serviceMonitor:
       enabled: true
 
-# ============================================================================
-# POSTGRESQL - PRODUCT
-# ============================================================================
+
+
+
 postgresql-product:
   enabled: true
   auth:
-    postgresPassword: ""  # Set via --set or secret
+    postgresPassword: ""
     username: postgres
     database: product
   primary:

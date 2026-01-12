@@ -16,7 +16,7 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Ingress Controller'dan gelen trafik
+
     - from:
         - namespaceSelector:
             matchLabels:
@@ -24,7 +24,7 @@ spec:
       ports:
         - protocol: TCP
           port: {{ .Values.gateway.service.port }}
-    # Ecommerce'den gelen trafik
+
     - from:
         - podSelector:
             matchLabels:
@@ -33,7 +33,7 @@ spec:
         - protocol: TCP
           port: {{ .Values.gateway.service.port }}
   egress:
-    # Auth API'ye çıkış
+
     - to:
         - podSelector:
             matchLabels:
@@ -41,7 +41,7 @@ spec:
       ports:
         - protocol: TCP
           port: {{ .Values.authApi.service.port }}
-    # Product API'ye çıkış
+
     - to:
         - podSelector:
             matchLabels:
@@ -49,7 +49,7 @@ spec:
       ports:
         - protocol: TCP
           port: {{ .Values.productApi.service.port }}
-    # DNS çözümlemesi
+
     - to: []
       ports:
         - protocol: UDP

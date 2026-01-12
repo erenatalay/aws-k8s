@@ -78,7 +78,7 @@ export class AuthService {
           password: hashedPassword,
           socialProvider: AuthProviderEnum.DEFAULT,
           deletedAt: null,
-          isActive: true, // Email verification disabled - activate immediately
+          isActive: true,
           activationCode: null,
         },
       });
@@ -90,19 +90,19 @@ export class AuthService {
           email,
           password: hashedPassword,
           socialProvider: AuthProviderEnum.DEFAULT,
-          isActive: true, // Email verification disabled - activate immediately
+          isActive: true,
           activationCode: null,
         },
       });
     }
 
-    // Email verification disabled for now
-    // await this.mailService.userSignUp({
-    //   to: email,
-    //   data: {
-    //     hash: activationCode,
-    //   },
-    // });
+
+
+
+
+
+
+
 
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);

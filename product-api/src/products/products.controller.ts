@@ -69,7 +69,7 @@ export class ProductsController {
       `POST /products - Creating new product by user: ${user.email}`,
     );
 
-    // userId'yi DTO'ya ekle (Auth API'den gelen validated user ID)
+
     createProductDto.userId = user.userId;
 
     return await this.productsService.create(createProductDto);

@@ -31,7 +31,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
 
   const handleDelete = async (id: string) => {
     await deleteProduct(id);
-    // Silinen ürünü listeden kaldır
+
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 

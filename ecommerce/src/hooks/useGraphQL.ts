@@ -3,18 +3,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AppGraphQLError, ErrorCode } from '@/lib/graphql/error-codes';
 
-/**
- * GraphQL mutation hook state
- */
+
 interface MutationState<T> {
   data: T | null;
   loading: boolean;
   error: AppGraphQLError | null;
 }
 
-/**
- * GraphQL mutation hook return type
- */
+
 interface UseMutationReturn<T, V> {
   mutate: (variables: V) => Promise<T | null>;
   data: T | null;
@@ -23,19 +19,7 @@ interface UseMutationReturn<T, V> {
   reset: () => void;
 }
 
-/**
- * GraphQL mutation hook
- *
- * @example
- * const { mutate, loading, error } = useMutation(loginSafe);
- *
- * const handleLogin = async () => {
- *   const result = await mutate({ email, password });
- *   if (result) {
- *     // Success
- *   }
- * };
- */
+
 export function useMutation<T, V>(
   mutationFn: (
     variables: V,
@@ -73,18 +57,14 @@ export function useMutation<T, V>(
   return { mutate, ...state, reset };
 }
 
-/**
- * GraphQL query hook state
- */
+
 interface QueryState<T> {
   data: T | null;
   loading: boolean;
   error: AppGraphQLError | null;
 }
 
-/**
- * GraphQL query hook options
- */
+
 interface UseQueryOptions<V> {
   variables?: V;
   skip?: boolean;
@@ -92,9 +72,7 @@ interface UseQueryOptions<V> {
   onError?: (error: AppGraphQLError) => void;
 }
 
-/**
- * GraphQL query hook return type
- */
+
 interface UseQueryReturn<T, V> {
   data: T | null;
   loading: boolean;
@@ -102,15 +80,7 @@ interface UseQueryReturn<T, V> {
   refetch: (newVariables?: V) => Promise<T | null>;
 }
 
-/**
- * GraphQL query hook
- *
- * @example
- * const { data, loading, error, refetch } = useQuery(
- *   getProductsSafe,
- *   { variables: { query: { page: 1, limit: 10 } } }
- * );
- */
+
 export function useQuery<T, V = void>(
   queryFn: (
     variables: V,
@@ -163,16 +133,7 @@ export function useQuery<T, V = void>(
   return { ...state, refetch };
 }
 
-/**
- * Lazy query hook - manuel tetikleme için
- *
- * @example
- * const { execute, data, loading } = useLazyQuery(getProductSafe);
- *
- * const handleClick = () => {
- *   execute('product-id');
- * };
- */
+
 export function useLazyQuery<T, V>(
   queryFn: (
     variables: V,
@@ -208,14 +169,12 @@ export function useLazyQuery<T, V>(
   return { ...state, execute, refetch };
 }
 
-/**
- * Error handler hook - Hata durumlarını yönetir
- */
+
 export function useErrorHandler() {
   const handleError = useCallback((error: AppGraphQLError) => {
-    // Auth hataları için özel işlem
+
     if (error.isAuthError()) {
-      // Token'ı temizle ve login sayfasına yönlendir
+
       if (typeof window !== 'undefined') {
         document.cookie = 'accessToken=; Max-Age=0; path=/';
         document.cookie = 'refreshToken=; Max-Age=0; path=/';
@@ -226,7 +185,7 @@ export function useErrorHandler() {
       }
     }
 
-    // Kullanıcıya gösterilebilir mesaj döndür
+
     return error.getUserFriendlyMessage();
   }, []);
 

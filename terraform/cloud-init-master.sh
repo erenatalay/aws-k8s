@@ -1,18 +1,18 @@
 #!/bin/bash
-# k3s Master Node Kurulumu
+
 
 set -e
 
-# Sistem güncellemesi
+
 apt-get update
 apt-get upgrade -y
 apt-get install -y curl wget
 
-# Swap'ı kapat
+
 swapoff -a
 sed -i '/swap/d' /etc/fstab
 
-# Private network interface'i bekle
+
 echo "Waiting for private network interface..."
 for i in {1..30}; do
   if ip addr show | grep -q "10.0.1"; then
@@ -22,14 +22,14 @@ for i in {1..30}; do
   sleep 2
 done
 
-# k3s kurulumu
+
 export K3S_TOKEN="${k3s_token}"
 
-# Private network interface'ini otomatik tespit et
+
 PRIVATE_IFACE=$(ip -o addr show | grep "10.0.1.10" | awk '{print $2}')
 echo "Using network interface: $PRIVATE_IFACE"
 
-# Public IP'yi al
+
 PUBLIC_IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
 echo "Public IP: $PUBLIC_IP"
 

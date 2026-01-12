@@ -1,11 +1,11 @@
-# ============================================================================
-# LOAD BALANCER MODULE - MAIN
-# Hetzner Cloud Load Balancer
-# ============================================================================
 
-# ============================================================================
-# PRIMARY LOAD BALANCER
-# ============================================================================
+
+
+
+
+
+
+
 
 resource "hcloud_load_balancer" "main" {
   name               = "${var.cluster_name}-lb"
@@ -18,9 +18,9 @@ resource "hcloud_load_balancer" "main" {
   }
 }
 
-# ============================================================================
-# LOAD BALANCER NETWORK ATTACHMENT
-# ============================================================================
+
+
+
 
 resource "hcloud_load_balancer_network" "main" {
   load_balancer_id = hcloud_load_balancer.main.id
@@ -28,9 +28,9 @@ resource "hcloud_load_balancer_network" "main" {
   ip               = "10.0.1.250"
 }
 
-# ============================================================================
-# LOAD BALANCER TARGETS
-# ============================================================================
+
+
+
 
 resource "hcloud_load_balancer_target" "workers" {
   count            = length(var.target_server_ids)
@@ -42,11 +42,11 @@ resource "hcloud_load_balancer_target" "workers" {
   depends_on = [hcloud_load_balancer_network.main]
 }
 
-# ============================================================================
-# LOAD BALANCER SERVICES
-# ============================================================================
 
-# HTTP Service
+
+
+
+
 resource "hcloud_load_balancer_service" "http" {
   load_balancer_id = hcloud_load_balancer.main.id
   protocol         = "http"
@@ -72,7 +72,7 @@ resource "hcloud_load_balancer_service" "http" {
   }
 }
 
-# HTTPS Service
+
 resource "hcloud_load_balancer_service" "https" {
   load_balancer_id = hcloud_load_balancer.main.id
   protocol         = "tcp"
@@ -88,7 +88,7 @@ resource "hcloud_load_balancer_service" "https" {
   }
 }
 
-# Kubernetes API (Optional - for external kubectl access)
+
 resource "hcloud_load_balancer_service" "kubernetes_api" {
   load_balancer_id = hcloud_load_balancer.main.id
   protocol         = "tcp"

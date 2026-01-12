@@ -16,7 +16,7 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Gateway'den gelen trafik
+
     - from:
         - podSelector:
             matchLabels:
@@ -24,7 +24,7 @@ spec:
       ports:
         - protocol: TCP
           port: {{ .Values.authApi.service.port }}
-    # Ecommerce'den gelen trafik
+
     - from:
         - podSelector:
             matchLabels:
@@ -33,7 +33,7 @@ spec:
         - protocol: TCP
           port: {{ .Values.authApi.service.port }}
   egress:
-    # PostgreSQL'e çıkış
+
     - to:
         - podSelector:
             matchLabels:
@@ -41,7 +41,7 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
-    # DNS çözümlemesi
+
     - to: []
       ports:
         - protocol: UDP

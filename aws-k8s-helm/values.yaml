@@ -1,12 +1,12 @@
-# Production deployment için values dosyası
-# Kullanım: helm install my-app . --values values.yaml
+
+
 
 global:
   imageRegistry: "docker.io"
   imagePullSecrets: []
-  storageClass: "local-path"  # k3s için varsayılan storage class
+  storageClass: "local-path"
 
-# Network Policy - Pod arası güvenlik
+
 networkPolicy:
   enabled: false
 
@@ -18,11 +18,11 @@ authApi:
     tag: "latest"
     pullPolicy: "Always"
   replicaCount: 1
-  # Pod Disruption Budget - Yüksek erişilebilirlik
+
   pdb:
     enabled: false
     minAvailable: 1
-  # Init Container - DB hazır olana kadar bekle
+
   initContainers:
     waitForDb:
       enabled: true
@@ -36,8 +36,8 @@ authApi:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 50m      # Test amaçlı minimum (250m'den)
-      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
+      cpu: 50m
+      memory: 64Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -54,7 +54,7 @@ authApi:
     API_PORT: "3001"
     API_GLOBAL_PREFIX: "api"
     POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: ""  # GitHub Secrets'tan gelecek
+    POSTGRES_PASSWORD: ""
     POSTGRES_DB: "postgres"
     POSTGRES_PORT: "5432"
   livenessProbe:
@@ -98,8 +98,8 @@ productApi:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 50m      # Test amaçlı minimum (250m'den)
-      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
+      cpu: 50m
+      memory: 64Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -107,7 +107,7 @@ productApi:
     targetCPUUtilizationPercentage: 70
   env:
     AUTH_SERVICE_URL: "http://auth-api:3001"
-    JWT_SECRET: ""  # GitHub Secrets'tan gelecek
+    JWT_SECRET: ""
     JWT_ISSUER: "auth-service"
     JWT_AUDIENCE: "api-services"
     NODE_ENV: "production"
@@ -115,7 +115,7 @@ productApi:
     API_PORT: "3002"
     API_GLOBAL_PREFIX: "api"
     POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: ""  # GitHub Secrets'tan gelecek
+    POSTGRES_PASSWORD: ""
     POSTGRES_DB: "postgres"
     POSTGRES_PORT: "5432"
   livenessProbe:
@@ -155,8 +155,8 @@ gateway:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 50m      # Test amaçlı minimum (250m'den)
-      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
+      cpu: 50m
+      memory: 64Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -205,8 +205,8 @@ ecommerce:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 50m      # Test amaçlı minimum (250m'den)
-      memory: 64Mi  # Test amaçlı minimum (256Mi'den)
+      cpu: 50m
+      memory: 64Mi
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -240,21 +240,21 @@ ecommerce:
 postgresql-auth:
   enabled: true
   auth:
-    postgresPassword: ""  # GitHub Secrets'tan gelecek
+    postgresPassword: ""
     database: "postgres"
     username: "postgres"
-    password: ""  # GitHub Secrets'tan gelecek
+    password: ""
   image:
     tag: "latest"
   primary:
     persistence:
       enabled: true
       size: 8Gi
-      storageClass: "local-path"  # k3s için varsayılan storage class
+      storageClass: "local-path"
     resources:
       requests:
-        memory: "128Mi"  # Test amaçlı minimum (256Mi'den)
-        cpu: "50m"       # Test amaçlı minimum (100m'den)
+        memory: "128Mi"
+        cpu: "50m"
       limits:
         memory: "512Mi"
         cpu: "500m"
@@ -262,21 +262,21 @@ postgresql-auth:
 postgresql-product:
   enabled: true
   auth:
-    postgresPassword: ""  # GitHub Secrets'tan gelecek
+    postgresPassword: ""
     database: "postgres"
     username: "postgres"
-    password: ""  # GitHub Secrets'tan gelecek
+    password: ""
   image:
     tag: "latest"
   primary:
     persistence:
       enabled: true
       size: 8Gi
-      storageClass: "local-path"  # k3s için varsayılan storage class
+      storageClass: "local-path"
     resources:
       requests:
-        memory: "128Mi"  # Test amaçlı minimum (256Mi'den)
-        cpu: "50m"       # Test amaçlı minimum (100m'den)
+        memory: "128Mi"
+        cpu: "50m"
       limits:
         memory: "512Mi"
         cpu: "500m"
@@ -291,22 +291,22 @@ ingress:
     cert-manager.io/cluster-issuer: ""
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    # Frontend - ecommerce
+
     - host: "ecommerce.local"
       paths:
         - path: /
           pathType: Prefix
-    # API Gateway - GraphQL
+
     - host: "api.ecommerce.local"
       paths:
         - path: /
           pathType: Prefix
-    # Auth API - Swagger & REST
+
     - host: "auth.ecommerce.local"
       paths:
         - path: /
           pathType: Prefix
-    # Product API - Swagger & REST
+
     - host: "product.ecommerce.local"
       paths:
         - path: /
@@ -315,9 +315,9 @@ ingress:
 
 secrets:
   authApi:
-    jwtSecret: ""  # GitHub Secrets'tan gelecek
-    jwtRefreshSecret: ""  # GitHub Secrets'tan gelecek
-    databaseUrl: ""  # GitHub Secrets'tan gelecek
+    jwtSecret: ""
+    jwtRefreshSecret: ""
+    databaseUrl: ""
 
   productApi:
-    databaseUrl: ""  # GitHub Secrets'tan gelecek
+    databaseUrl: ""

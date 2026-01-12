@@ -50,7 +50,7 @@ import { SwaggerModule } from './swagger/swagger.module';
     ]),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
-      // Production/container ortamında her zaman yazılabilir bir dizine çıkart
+
       autoSchemaFile: {
         path:
           process.env.AUTO_SCHEMA_FILE ||

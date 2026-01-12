@@ -1,4 +1,4 @@
-// Auth & User operations
+
 export {
   REGISTER_USER,
   LOGIN_USER,
@@ -11,7 +11,7 @@ export {
   DELETE_USER,
 } from './auth';
 
-// Product operations
+
 export {
   GET_PRODUCTS,
   GET_PRODUCT,

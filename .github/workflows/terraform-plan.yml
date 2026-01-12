@@ -1,7 +1,7 @@
 name: Terraform Plan
 
 on:
-  # Sadece PR'larda çalışır
+
   pull_request:
     branches: [main, master]
     paths:
@@ -15,11 +15,11 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    
+
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,9 +63,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+
+
 
             <details><summary>Show Plan</summary>
 

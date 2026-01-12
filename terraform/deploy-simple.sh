@@ -1,7 +1,7 @@
 #!/bin/bash
-# ============================================================================
-# BASİT HETZNER k3s KURULUM SCRIPTI
-# ============================================================================
+
+
+
 
 set -e
 
@@ -32,7 +32,7 @@ echo "  Hetzner Cloud k3s Cluster Kurulumu"
 echo "============================================"
 echo ""
 
-# Token kontrolü
+
 if [[ -z "${HCLOUD_TOKEN}" ]]; then
     log_error "HCLOUD_TOKEN environment variable bulunamadı!"
     echo ""
@@ -45,7 +45,7 @@ fi
 
 log_success "Hetzner token bulundu"
 
-# Terraform kontrolü
+
 if ! command -v terraform &> /dev/null; then
     log_error "Terraform kurulu değil!"
     echo "Kurulum için: brew install terraform"
@@ -54,18 +54,18 @@ fi
 
 log_success "Terraform bulundu: $(terraform version | head -n1)"
 
-# Klasör kontrolü
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TERRAFORM_DIR="$SCRIPT_DIR"
 
 cd "$TERRAFORM_DIR"
 
-# Terraform init
+
 log_info "Terraform başlatılıyor..."
 terraform init -upgrade > /dev/null 2>&1
 log_success "Terraform başlatıldı"
 
-# Plan
+
 log_info "Terraform plan oluşturuluyor..."
 terraform plan \
     -var="hcloud_token=${HCLOUD_TOKEN}" \
@@ -80,7 +80,7 @@ if [[ "$confirm" != "evet" ]]; then
     exit 0
 fi
 
-# Apply
+
 log_info "Cluster kuruluyor... (Bu 3-5 dakika sürebilir)"
 terraform apply tfplan
 
@@ -88,7 +88,7 @@ echo ""
 log_success "Cluster başarıyla kuruldu!"
 echo ""
 
-# Outputs
+
 log_info "Cluster bilgileri:"
 echo ""
 terraform output -json | jq -r 'to_entries[] | "\(.key): \(.value.value)"' | grep -v "k3s_token"

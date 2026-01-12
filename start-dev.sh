@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Development Environment Quick Start
-# RabbitMQ yerine Kafka ile development ortamını başlatır
+
+
 
 set -e
 
@@ -9,14 +9,14 @@ echo "🚀 Development Environment - Kafka Setup"
 echo "=========================================="
 echo ""
 
-# Colors
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Check if Docker is running
+
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}❌ Docker is not running. Please start Docker first.${NC}"
     exit 1
@@ -25,11 +25,11 @@ fi
 echo -e "${GREEN}✅ Docker is running${NC}"
 echo ""
 
-# Step 1: Start infrastructure
+
 echo -e "${BLUE}📦 Starting infrastructure services...${NC}"
 echo ""
 
-# Start Kafka cluster
+
 echo "  → Starting Zookeeper..."
 docker-compose -f docker-compose.dev.yml up -d zookeeper-dev
 
@@ -43,11 +43,11 @@ echo ""
 echo -e "${YELLOW}⏳ Waiting for services to be ready (30 seconds)...${NC}"
 sleep 30
 
-# Check health
+
 echo ""
 echo -e "${BLUE}🔍 Checking service health...${NC}"
 
-# Check Kafka
+
 if docker exec kafka-1-dev kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Kafka Broker 1 is healthy${NC}"
 else
@@ -60,7 +60,7 @@ else
     echo -e "${RED}❌ Kafka Broker 2 is not responding${NC}"
 fi
 
-# Check PostgreSQL
+
 if docker exec auth-postgres-dev pg_isready -U auth_user > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Auth PostgreSQL is healthy${NC}"
 else
@@ -73,11 +73,11 @@ else
     echo -e "${RED}❌ Product PostgreSQL is not responding${NC}"
 fi
 
-# Step 2: Create development topics
+
 echo ""
 echo -e "${BLUE}📝 Creating development topics...${NC}"
 
-# Auth service topics
+
 docker exec kafka-1-dev kafka-topics --create --if-not-exists \
     --topic user.register \
     --partitions 5 \
@@ -102,7 +102,7 @@ docker exec kafka-1-dev kafka-topics --create --if-not-exists \
     --replication-factor 2 \
     --bootstrap-server localhost:9092 2>/dev/null || true
 
-# Product service topics
+
 docker exec kafka-1-dev kafka-topics --create --if-not-exists \
     --topic product.created \
     --partitions 10 \
@@ -129,7 +129,7 @@ docker exec kafka-1-dev kafka-topics --create --if-not-exists \
 
 echo -e "${GREEN}✅ Topics created${NC}"
 
-# Step 3: Start Kafka UI
+
 echo ""
 echo -e "${BLUE}🖥️  Starting Kafka UI...${NC}"
 docker-compose -f docker-compose.dev.yml up -d kafka-ui-dev

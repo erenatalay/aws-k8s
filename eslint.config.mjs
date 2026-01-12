@@ -1,9 +1,5 @@
-// @ts-check
-/**
- * Monorepo Root ESLint Configuration
- * Her proje kendi eslint.config.mjs dosyasını kullanır.
- * Bu dosya sadece root seviyesinde lint çalıştırıldığında kullanılır.
- */
+
+
 
 import eslint from '@eslint/js';
 import globals from 'globals';
@@ -41,7 +37,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      // Unused Variables
+
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -52,12 +48,12 @@ export default tseslint.config(
         },
       ],
 
-      // TypeScript
+
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-empty-function': 'off',
 
-      // General
+
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
   },

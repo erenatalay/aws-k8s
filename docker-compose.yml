@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Auth API Service
+
   auth-api:
     build:
       context: ./auth-api
@@ -13,8 +13,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      # External database URL - Kubernetes'teki PostgreSQL veya external database kullanın
-      # Kubernetes'te port-forward için: kubectl port-forward svc/postgresql-auth 5432:5432
+
       DATABASE_URL: ${AUTH_DATABASE_URL:-postgresql://auth_user:auth_password@localhost:5432/auth_db?schema=public}
       JWT_SECRET: your-super-secret-jwt-key-here-change-in-production
       JWT_EXPIRES_IN: 1h
@@ -24,7 +23,7 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Product API Service
+
   product-api:
     build:
       context: ./product-api
@@ -36,8 +35,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      # External database URL - Kubernetes'teki PostgreSQL veya external database kullanın
-      # Kubernetes'te port-forward için: kubectl port-forward svc/postgresql-product 5433:5432
+
+
       DATABASE_URL: ${PRODUCT_DATABASE_URL:-postgresql://product_user:product_password@localhost:5433/product_db?schema=public}
       AUTH_SERVICE_URL: http://auth-api:3000
       JWT_ISSUER: auth-service
@@ -46,7 +45,7 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Gateway Service
+
   gateway:
     build:
       context: ./gateway
@@ -68,7 +67,7 @@ services:
       - product-api
     restart: unless-stopped
 
-  # Ecommerce React App (Next.js)
+
   ecommerce-app:
     build:
       context: ./ecommerce

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL database for Auth API
+
   auth-postgres:
     image: postgres:17.0
     container_name: auth-postgres-dev
@@ -21,7 +21,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # PostgreSQL database for Product API
+
   product-postgres:
     image: postgres:17.0
     container_name: product-postgres-dev

@@ -140,12 +140,12 @@ export function DropdownMenuItem({
     e.preventDefault();
     e.stopPropagation();
 
-    // First execute the action
+
     if (onClick) {
       onClick();
     }
 
-    // Then close the dropdown
+
     setOpen(false);
   };
 

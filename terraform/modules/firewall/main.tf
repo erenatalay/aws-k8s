@@ -1,16 +1,16 @@
-# ============================================================================
-# FIREWALL MODULE - MAIN
-# Hetzner Cloud Firewall Rules
-# ============================================================================
+
+
+
+
 
 locals {
-  # SSH allowed IPs - default to all if empty
+
   ssh_source_ips = length(var.allowed_ssh_ips) > 0 ? var.allowed_ssh_ips : ["0.0.0.0/0", "::/0"]
 }
 
-# ============================================================================
-# CONTROL PLANE FIREWALL
-# ============================================================================
+
+
+
 
 resource "hcloud_firewall" "control_plane" {
   count = var.enable_firewall ? 1 : 0
@@ -18,7 +18,7 @@ resource "hcloud_firewall" "control_plane" {
   name   = "${var.cluster_name}-control-plane-fw"
   labels = var.labels
 
-  # SSH Access
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -26,7 +26,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = local.ssh_source_ips
   }
 
-  # Kubernetes API Server
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -34,7 +34,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # etcd client requests
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -42,7 +42,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # Kubelet API
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -50,7 +50,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # kube-scheduler
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -58,7 +58,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # kube-controller-manager
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -66,7 +66,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # Flannel VXLAN
+
   rule {
     direction  = "in"
     protocol   = "udp"
@@ -74,7 +74,7 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # NodePort Services
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -82,14 +82,14 @@ resource "hcloud_firewall" "control_plane" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # ICMP (ping)
+
   rule {
     direction  = "in"
     protocol   = "icmp"
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # Outbound - All traffic
+
   rule {
     direction       = "out"
     protocol        = "tcp"
@@ -111,9 +111,9 @@ resource "hcloud_firewall" "control_plane" {
   }
 }
 
-# ============================================================================
-# WORKER NODE FIREWALL
-# ============================================================================
+
+
+
 
 resource "hcloud_firewall" "workers" {
   count = var.enable_firewall ? 1 : 0
@@ -121,7 +121,7 @@ resource "hcloud_firewall" "workers" {
   name   = "${var.cluster_name}-workers-fw"
   labels = var.labels
 
-  # SSH Access
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -129,7 +129,7 @@ resource "hcloud_firewall" "workers" {
     source_ips = local.ssh_source_ips
   }
 
-  # Kubelet API
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -137,7 +137,7 @@ resource "hcloud_firewall" "workers" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # Flannel VXLAN
+
   rule {
     direction  = "in"
     protocol   = "udp"
@@ -145,7 +145,7 @@ resource "hcloud_firewall" "workers" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # NodePort Services
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -153,7 +153,7 @@ resource "hcloud_firewall" "workers" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # HTTP
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -161,7 +161,7 @@ resource "hcloud_firewall" "workers" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # HTTPS
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -169,14 +169,14 @@ resource "hcloud_firewall" "workers" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # ICMP
+
   rule {
     direction  = "in"
     protocol   = "icmp"
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # Outbound - All traffic
+
   rule {
     direction       = "out"
     protocol        = "tcp"
@@ -198,9 +198,9 @@ resource "hcloud_firewall" "workers" {
   }
 }
 
-# ============================================================================
-# LOAD BALANCER FIREWALL
-# ============================================================================
+
+
+
 
 resource "hcloud_firewall" "load_balancer" {
   count = var.enable_firewall ? 1 : 0
@@ -208,7 +208,7 @@ resource "hcloud_firewall" "load_balancer" {
   name   = "${var.cluster_name}-lb-fw"
   labels = var.labels
 
-  # HTTP
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -216,7 +216,7 @@ resource "hcloud_firewall" "load_balancer" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # HTTPS
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -224,14 +224,14 @@ resource "hcloud_firewall" "load_balancer" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # ICMP
+
   rule {
     direction  = "in"
     protocol   = "icmp"
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # Outbound
+
   rule {
     direction       = "out"
     protocol        = "tcp"

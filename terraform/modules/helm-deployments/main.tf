@@ -1,15 +1,15 @@
-# ============================================================================
-# HELM DEPLOYMENTS MODULE - MAIN
-# Kubernetes Applications Deployment via Helm
-# ============================================================================
+
+
+
+
 
 locals {
   namespace = var.environment
 }
 
-# ============================================================================
-# NAMESPACE
-# ============================================================================
+
+
+
 
 resource "kubernetes_namespace" "main" {
   metadata {
@@ -22,9 +22,9 @@ resource "kubernetes_namespace" "main" {
   }
 }
 
-# ============================================================================
-# IMAGE PULL SECRETS
-# ============================================================================
+
+
+
 
 resource "kubernetes_secret" "docker_registry" {
   for_each = { for s in var.image_pull_secrets : s.name => s }
@@ -49,11 +49,11 @@ resource "kubernetes_secret" "docker_registry" {
   }
 }
 
-# Hetzner Cloud secret gerekli değil (k3s init sırasında ayarlanacak)
 
-# ============================================================================
-# CERT-MANAGER
-# ============================================================================
+
+
+
+
 
 resource "helm_release" "cert_manager" {
   count = var.enable_cert_manager ? 1 : 0
@@ -76,7 +76,7 @@ resource "helm_release" "cert_manager" {
   }
 }
 
-# Let's Encrypt ClusterIssuer
+
 resource "kubernetes_manifest" "letsencrypt_issuer" {
   count = var.enable_cert_manager && var.letsencrypt_email != "" ? 1 : 0
 
@@ -107,9 +107,9 @@ resource "kubernetes_manifest" "letsencrypt_issuer" {
   depends_on = [helm_release.cert_manager]
 }
 
-# ============================================================================
-# NGINX INGRESS CONTROLLER
-# ============================================================================
+
+
+
 
 resource "helm_release" "nginx_ingress" {
   name             = "ingress-nginx"
@@ -150,9 +150,9 @@ resource "helm_release" "nginx_ingress" {
   }
 }
 
-# ============================================================================
-# MONITORING STACK (Prometheus + Grafana)
-# ============================================================================
+
+
+
 
 resource "helm_release" "prometheus_stack" {
   count = var.enable_monitoring ? 1 : 0
@@ -185,7 +185,7 @@ resource "helm_release" "prometheus_stack" {
         }
       }
       grafana = {
-        adminPassword = "admin" # Change in production!
+        adminPassword = "admin"
         persistence = {
           enabled          = true
           storageClassName = "hcloud-volumes"
@@ -221,9 +221,9 @@ resource "helm_release" "prometheus_stack" {
   ]
 }
 
-# ============================================================================
-# LOGGING STACK (Loki + Promtail)
-# ============================================================================
+
+
+
 
 resource "helm_release" "loki" {
   count = var.enable_logging ? 1 : 0
@@ -256,9 +256,9 @@ resource "helm_release" "loki" {
   }
 }
 
-# ============================================================================
-# APPLICATION HELM CHART
-# ============================================================================
+
+
+
 
 resource "helm_release" "application" {
   name      = var.cluster_name

@@ -1,7 +1,7 @@
-# ============================================================================
-# BASIT HETZNER CLOUD TERRAFORM - k3s CLUSTER
-# Load Balancer kullanmadan, sadece NodePort ile
-# ============================================================================
+
+
+
+
 
 provider "hcloud" {
   token = var.hcloud_token
@@ -11,16 +11,16 @@ locals {
   cluster_name = "${var.project_name}-${var.environment}"
 }
 
-# ============================================================================
-# SSH KEY
-# ============================================================================
 
-# Import existing SSH key instead of creating new one
+
+
+
+
 data "hcloud_ssh_keys" "all" {}
 
-# ============================================================================
-# NETWORK
-# ============================================================================
+
+
+
 
 resource "hcloud_network" "main" {
   name     = "${local.cluster_name}-network"
@@ -34,14 +34,14 @@ resource "hcloud_network_subnet" "kubernetes" {
   ip_range     = "10.0.1.0/24"
 }
 
-# ============================================================================
-# FIREWALL
-# ============================================================================
+
+
+
 
 resource "hcloud_firewall" "cluster" {
   name = "${local.cluster_name}-firewall"
 
-  # SSH
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -49,7 +49,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # Kubernetes API
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -57,7 +57,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # HTTP
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -65,7 +65,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # HTTPS
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -73,7 +73,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # NodePort Range
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -81,7 +81,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
-  # Internal k3s
+
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -96,7 +96,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # Flannel
+
   rule {
     direction  = "in"
     protocol   = "udp"
@@ -104,7 +104,7 @@ resource "hcloud_firewall" "cluster" {
     source_ips = ["10.0.0.0/8"]
   }
 
-  # ICMP
+
   rule {
     direction  = "in"
     protocol   = "icmp"
@@ -112,18 +112,18 @@ resource "hcloud_firewall" "cluster" {
   }
 }
 
-# ============================================================================
-# k3s TOKEN
-# ============================================================================
+
+
+
 
 resource "random_password" "k3s_token" {
   length  = 64
   special = false
 }
 
-# ============================================================================
-# CONTROL PLANE - MASTER NODE
-# ============================================================================
+
+
+
 
 resource "hcloud_server" "control_plane" {
   name         = "${local.cluster_name}-master"
@@ -154,9 +154,9 @@ resource "hcloud_server" "control_plane" {
   }
 }
 
-# ============================================================================
-# WORKER NODES
-# ============================================================================
+
+
+
 
 resource "hcloud_server" "workers" {
   count = var.worker_node_count
@@ -192,9 +192,9 @@ resource "hcloud_server" "workers" {
   }
 }
 
-# ============================================================================
-# KUBECONFIG RETRIEVAL
-# ============================================================================
+
+
+
 
 resource "null_resource" "get_kubeconfig" {
   depends_on = [hcloud_server.control_plane]
@@ -214,9 +214,9 @@ resource "null_resource" "get_kubeconfig" {
   }
 }
 
-# ============================================================================
-# OUTPUTS
-# ============================================================================
+
+
+
 
 output "master_ip" {
   value = hcloud_server.control_plane.ipv4_address
@@ -241,20 +241,20 @@ output "ssh_command_master" {
 
 output "access_info" {
   value = <<-EOT
-  
+
   Cluster kuruldu! Erişim için:
-  
+
   1. Kubeconfig ayarla:
      export KUBECONFIG=${path.module}/.kube/config
-  
+
   2. Cluster kontrol et:
      kubectl get nodes
-  
+
   3. Master IP: ${hcloud_server.control_plane.ipv4_address}
   4. Worker IPs: ${join(", ", hcloud_server.workers[*].ipv4_address)}
-  
+
   5. NodePort servisler için herhangi bir worker IP kullanabilirsin:
-     http://<worker-ip>:30000-32767
-  
+     http:
+
   EOT
 }

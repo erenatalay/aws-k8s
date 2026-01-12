@@ -3,7 +3,7 @@ set -e
 
 echo "� Checking Prisma migration status..."
 
-# Wait for database connection
+
 MAX_RETRIES=30
 RETRY_COUNT=0
 
@@ -33,7 +33,7 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
   echo "⚠️  Starting without migrations..."
 fi
 
-# Ensure Prisma client is generated
+
 echo "🔧 Generating Prisma client..."
 npx prisma generate 2>/dev/null || true
 

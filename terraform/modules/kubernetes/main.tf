@@ -1,33 +1,33 @@
-# ============================================================================
-# KUBERNETES MODULE - MAIN
-# k3s Lightweight Kubernetes Cluster
-# ============================================================================
+
+
+
+
 
 locals {
   k3s_install_url = "https://get.k3s.io"
-  
-  # Cloud-init configuration for k3s
+
+
   control_plane_labels = merge(var.labels, {
     role = "control-plane"
   })
-  
+
   worker_labels = merge(var.labels, {
     role = "worker"
   })
 }
 
-# ============================================================================
-# RANDOM TOKEN FOR K3S CLUSTER
-# ============================================================================
+
+
+
 
 resource "random_password" "k3s_token" {
   length  = 64
   special = false
 }
 
-# ============================================================================
-# PLACEMENT GROUPS - High Availability
-# ============================================================================
+
+
+
 
 resource "hcloud_placement_group" "control_plane" {
   name   = "${var.cluster_name}-control-plane-pg"
@@ -41,9 +41,9 @@ resource "hcloud_placement_group" "workers" {
   labels = local.worker_labels
 }
 
-# ============================================================================
-# CONTROL PLANE NODES
-# ============================================================================
+
+
+
 
 resource "hcloud_server" "control_plane" {
   count = var.control_plane_count
@@ -54,7 +54,7 @@ resource "hcloud_server" "control_plane" {
   location     = var.location
   ssh_keys     = var.ssh_key_ids
   firewall_ids = var.firewall_ids
-  
+
   placement_group_id = hcloud_placement_group.control_plane.id
 
   labels = merge(local.control_plane_labels, {
@@ -86,9 +86,9 @@ resource "hcloud_server" "control_plane" {
   }
 }
 
-# ============================================================================
-# WORKER NODES
-# ============================================================================
+
+
+
 
 resource "hcloud_server" "workers" {
   count = var.worker_node_count
@@ -99,7 +99,7 @@ resource "hcloud_server" "workers" {
   location     = var.location
   ssh_keys     = var.ssh_key_ids
   firewall_ids = var.firewall_ids
-  
+
   placement_group_id = hcloud_placement_group.workers.id
 
   labels = merge(local.worker_labels, {
@@ -132,9 +132,9 @@ resource "hcloud_server" "workers" {
   }
 }
 
-# ============================================================================
-# ADDITIONAL WORKER NODE POOLS
-# ============================================================================
+
+
+
 
 resource "hcloud_placement_group" "node_pools" {
   for_each = { for pool in var.worker_node_pools : pool.name => pool }
@@ -145,7 +145,7 @@ resource "hcloud_placement_group" "node_pools" {
 }
 
 resource "hcloud_server" "node_pool_workers" {
-  for_each = { 
+  for_each = {
     for item in flatten([
       for pool in var.worker_node_pools : [
         for i in range(pool.count) : {
@@ -200,9 +200,9 @@ resource "hcloud_server" "node_pool_workers" {
   }
 }
 
-# ============================================================================
-# NULL RESOURCE - Wait for cluster to be ready
-# ============================================================================
+
+
+
 
 resource "null_resource" "wait_for_cluster" {
   depends_on = [hcloud_server.control_plane, hcloud_server.workers]
@@ -215,9 +215,9 @@ resource "null_resource" "wait_for_cluster" {
   }
 }
 
-# ============================================================================
-# KUBECONFIG RETRIEVAL
-# ============================================================================
+
+
+
 
 resource "null_resource" "get_kubeconfig" {
   depends_on = [null_resource.wait_for_cluster]
@@ -236,9 +236,9 @@ resource "null_resource" "get_kubeconfig" {
   }
 }
 
-# ============================================================================
-# LOCAL FILE - Kubeconfig
-# ============================================================================
+
+
+
 
 data "local_file" "kubeconfig" {
   depends_on = [null_resource.get_kubeconfig]

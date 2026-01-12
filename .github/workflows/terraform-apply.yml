@@ -1,7 +1,7 @@
 name: Terraform Apply
 
 on:
-  # Sadece manuel tetikleme - otomatik çalışmaz
+
   workflow_dispatch:
     inputs:
       action:
@@ -22,11 +22,11 @@ jobs:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
     environment: production
-    
+
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
         run: |
           echo "Waiting for k3s to initialize..."
           sleep 120
-          
+
           for i in {1..30}; do
             if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@${{ steps.outputs.outputs.master_ip }} \
               "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml && kubectl get nodes" 2>/dev/null; then

@@ -13,7 +13,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-// Error codes - Frontend ile tutarlı olmalı
+
 enum ErrorCode {
   UNAUTHENTICATED = 'UNAUTHENTICATED',
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -26,7 +26,7 @@ enum ErrorCode {
   SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 }
 
-// Error code -> HTTP Status mapping
+
 const errorCodeToStatus: Record<string, number> = {
   [ErrorCode.UNAUTHENTICATED]: 401,
   [ErrorCode.UNAUTHORIZED]: 401,
@@ -51,7 +51,7 @@ interface ErrorExtensions {
   details?: Record<string, unknown>;
 }
 
-// Custom DataSource - Header'ları forward eder
+
 class AuthenticatedDataSource extends RemoteGraphQLDataSource {
   override willSendRequest(options: GraphQLDataSourceProcessOptions): void {
     const { request, context } = options;
@@ -59,25 +59,25 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
 
     const ctx = context as { req?: Request };
 
-    // Authorization header'ını forward et
+
     const authorization = ctx.req?.headers?.authorization;
     if (authorization && typeof authorization === 'string') {
       request.http.headers.set('authorization', authorization);
     }
 
-    // Accept-Language header'ını forward et
+
     const acceptLanguage = ctx.req?.headers?.['accept-language'];
     if (acceptLanguage && typeof acceptLanguage === 'string') {
       request.http.headers.set('accept-language', acceptLanguage);
     }
 
-    // User-Agent forward et
+
     const userAgent = ctx.req?.headers?.['user-agent'];
     if (userAgent && typeof userAgent === 'string') {
       request.http.headers.set('user-agent', userAgent);
     }
 
-    // X-Request-ID for tracing
+
     const requestIdHeader = ctx.req?.headers?.['x-request-id'];
     const requestId =
       typeof requestIdHeader === 'string'
@@ -111,7 +111,7 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
             const statusCode =
               extensions.statusCode || errorCodeToStatus[code] || 500;
 
-            // Development modunda daha fazla bilgi göster
+
             const isDev = configService.get('NODE_ENV') !== 'production';
 
             return {

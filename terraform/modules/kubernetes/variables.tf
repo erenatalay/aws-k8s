@@ -1,7 +1,7 @@
-# ============================================================================
-# KUBERNETES MODULE - VARIABLES
-# k3s Cluster Configuration on Hetzner Cloud
-# ============================================================================
+
+
+
+
 
 variable "cluster_name" {
   description = "Cluster name"

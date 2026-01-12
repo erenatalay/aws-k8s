@@ -1,5 +1,5 @@
 import { I18nContext } from 'nestjs-i18n';
-import * as path from 'path'; // DÜZELTME: path modülünü doğru içe aktarın
+import * as path from 'path';
 import { MaybeType } from 'src/utils/types/maybe.types';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

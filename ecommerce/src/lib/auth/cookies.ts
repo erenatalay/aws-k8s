@@ -7,9 +7,9 @@ const cookieOpts = {
   httpOnly: true,
   path: '/',
   sameSite: 'lax' as const,
-  // Default true for security, set COOKIE_SECURE=false to disable (e.g., for local HTTP)
+
   secure: process.env.COOKIE_SECURE !== 'false',
-  // Allow sharing across subdomains for .local domains
+
   domain: process.env.COOKIE_DOMAIN || undefined,
 } satisfies Parameters<typeof serialize>[2];
 

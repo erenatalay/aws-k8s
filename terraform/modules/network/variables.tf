@@ -1,7 +1,7 @@
-# ============================================================================
-# NETWORK MODULE - HETZNER CLOUD
-# VPC, Subnet ve Network Configuration
-# ============================================================================
+
+
+
+
 
 variable "cluster_name" {
   description = "Cluster name for resource naming"

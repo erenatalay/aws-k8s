@@ -31,7 +31,7 @@ export class UsersResolver {
     return this.usersService.getUserByUuid(user.id);
   }
 
-  // Federation: Diğer subgraph'lar User bilgisi istediğinde buraya düşer
+
   @ResolveReference()
   async resolveReference(reference: {
     __typename: string;

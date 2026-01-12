@@ -54,9 +54,9 @@ export const profileSchema = Yup.object().shape({
 
 export type ProfileFormValues = Yup.InferType<typeof profileSchema>;
 
-// ============================================
-// Change Password Validation
-// ============================================
+
+
+
 
 export const changePasswordSchema = Yup.object().shape({
   currentPassword: Yup.string()

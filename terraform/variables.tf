@@ -1,6 +1,6 @@
-# ============================================================================
-# BASİT TERRAFORM VARIABLES
-# ============================================================================
+
+
+
 
 variable "hcloud_token" {
   description = "Hetzner Cloud API Token"
@@ -41,13 +41,13 @@ variable "ssh_public_key" {
 variable "control_plane_type" {
   description = "Master server type"
   type        = string
-  default     = "cpx11" # 2 vCPU, 2GB RAM - €4.85/ay
+  default     = "cpx11"
 }
 
 variable "worker_node_type" {
   description = "Worker server type"
   type        = string
-  default     = "cpx21" # 3 vCPU, 4GB RAM - €8.98/ay
+  default     = "cpx21"
 }
 
 variable "worker_node_count" {

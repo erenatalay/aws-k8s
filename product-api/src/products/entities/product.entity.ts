@@ -18,7 +18,7 @@ export class Product {
   @Field()
   userId: string;
 
-  // Federation: owner Auth API'den gelecek
+
   @Field(() => User, { nullable: true })
   owner?: User;
 

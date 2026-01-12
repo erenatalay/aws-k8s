@@ -1,4 +1,4 @@
-// @ts-check
+
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
@@ -31,7 +31,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      // TypeScript - Gevşetilmiş (any kullanımına izin ver)
+
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -39,17 +39,17 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
 
-      // Async/Await - Gevşetilmiş
+
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
 
-      // Type System - Gevşetilmiş
+
       '@typescript-eslint/no-redundant-type-constituents': 'off',
       '@typescript-eslint/no-require-imports': 'off',
 
-      // Unused Variables - ÖNEMLİ (error olarak kalıyor)
+
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -60,13 +60,13 @@ export default tseslint.config(
         },
       ],
 
-      // Code Quality
+
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }],
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-empty-interface': 'off',
 
-      // Prettier - ÖNEMLİ (error olarak kalıyor)
+
       'prettier/prettier': [
         'error',
         {

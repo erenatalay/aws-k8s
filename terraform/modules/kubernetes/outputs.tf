@@ -1,6 +1,6 @@
-# ============================================================================
-# KUBERNETES MODULE - OUTPUTS
-# ============================================================================
+
+
+
 
 output "control_plane_server_ids" {
   description = "IDs of control plane servers"

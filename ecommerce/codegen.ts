@@ -6,7 +6,7 @@ const config: CodegenConfig = {
   documents: ['src/graphql/operations/**/*.ts'],
   ignoreNoDocuments: true,
   generates: {
-    // Tek çıktı klasörü - tüm tipler ve operations
+
     './src/graphql/generated/': {
       preset: 'client',
       config: {

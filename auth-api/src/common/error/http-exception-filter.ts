@@ -41,7 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = exception.message;
       }
     } else {
-      // Beklenmeyen hatalar için log oluştur
+
       this.logger.error(
         `Unexpected error: ${exception instanceof Error ? exception.message : String(exception)}`,
         exception instanceof Error ? exception.stack : undefined,

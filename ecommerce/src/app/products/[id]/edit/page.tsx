@@ -33,7 +33,7 @@ export default function EditProductPage() {
     price: '',
   });
 
-  // Product yüklendiğinde formu doldur
+
   useEffect(() => {
     if (product) {
       setFormData({
@@ -113,7 +113,7 @@ export default function EditProductPage() {
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <Navbar />
       <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-12">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -125,7 +125,7 @@ export default function EditProductPage() {
           </Button>
         </div>
 
-        {/* Edit Form */}
+        {}
         <Card className="bg-white/5 border-white/10 text-slate-50">
           <CardHeader>
             <CardTitle>Edit Product</CardTitle>

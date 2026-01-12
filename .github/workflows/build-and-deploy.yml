@@ -1,10 +1,10 @@
 name: Build, Push and Deploy
 
 on:
-  # Push'ta otomatik çalışır
+
   push:
     branches: [main, master]
-  # Manuel de çalıştırılabilir
+
   workflow_dispatch:
     inputs:
       action:
@@ -23,15 +23,15 @@ env:
   ENVIRONMENT: production
 
 jobs:
-  # ============================================================================
-  # JOB 1: Build Images
-  # ============================================================================
+
+
+
   build:
     name: 'Build Docker Images'
     runs-on: ubuntu-latest
-    # Push'ta veya manuel build-and-deploy/build-only seçildiğinde çalışır
+
     if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,17 +78,17 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/ecommerce:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
 
-  # ============================================================================
-  # JOB 2: Deploy to k3s (Build tamamlandıktan sonra)
-  # ============================================================================
+
+
+
   deploy:
     name: 'Deploy to k3s'
     runs-on: ubuntu-latest
-    needs: [build]  # Build bittikten sonra başlar
+    needs: [build]
     if: always() && needs.build.result == 'success'
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -108,24 +108,24 @@ jobs:
           mkdir -p ~/.ssh ~/.kube
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          
+
           MASTER_IP="${{ secrets.MASTER_IP }}"
           ssh-keyscan -H $MASTER_IP >> ~/.ssh/known_hosts 2>/dev/null || true
-          
-          # Download kubeconfig from master
+
+
           ssh -o StrictHostKeyChecking=no root@$MASTER_IP \
             "cat /etc/rancher/k3s/k3s.yaml" | \
             sed "s/127.0.0.1/$MASTER_IP/g" > ~/.kube/config
-          
+
           chmod 600 ~/.kube/config
 
       - name: Verify cluster connection
         run: |
           kubectl cluster-info
           kubectl get nodes
-          # API server bağlantısını test et
+
           kubectl get namespaces --request-timeout=30s
-          
+
       - name: Check Storage Classes
         run: |
           echo "📦 Mevcut Storage Classes:"
@@ -133,7 +133,7 @@ jobs:
           echo ""
           echo "Varsayılan storage class:"
           kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' || echo "Varsayılan storage class yok"
-          
+
       - name: Check Cluster Resources
         run: |
           echo "## 📊 Cluster Kaynak Durumu" >> $GITHUB_STEP_SUMMARY
@@ -144,7 +144,7 @@ jobs:
           echo "### Node Detayları:" >> $GITHUB_STEP_SUMMARY
           kubectl describe nodes | grep -A 5 "Allocated resources" >> $GITHUB_STEP_SUMMARY || true
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           echo "🔍 Cluster kaynakları kontrol ediliyor..."
           kubectl get nodes -o custom-columns=NAME:.metadata.name,CPU:.status.capacity.cpu,MEMORY:.status.capacity.memory
 
@@ -176,20 +176,20 @@ jobs:
             "AUTH_JWT_SECRET"
             "AUTH_JWT_REFRESH_SECRET"
           )
-          
+
           MISSING_SECRETS=()
           for secret in "${REQUIRED_SECRETS[@]}"; do
             if [[ -z "${!secret}" ]]; then
               MISSING_SECRETS+=("$secret")
             fi
           done
-          
-          if [[ ${#MISSING_SECRETS[@]} -gt 0 ]]; then
+
+          if [[ ${
             echo "❌ Eksik secrets bulundu: ${MISSING_SECRETS[*]}"
             echo "Lütfen GitHub Repository Settings > Secrets and variables > Actions bölümünden bu secrets'ları ekleyin."
             exit 1
           fi
-          
+
           echo "✅ Tüm gerekli secrets mevcut"
         env:
           AUTH_POSTGRES_PASSWORD: ${{ secrets.AUTH_POSTGRES_PASSWORD }}
@@ -201,30 +201,30 @@ jobs:
       - name: Helm Deploy
         run: |
           cd aws-k8s-helm
-          
-          # values.yaml kullanılıyor, hassas bilgiler GitHub Secrets'tan gelecek
+
+
           IMAGE_TAG="${{ github.sha }}"
-          
+
           echo "🚀 Helm deployment başlatılıyor..."
           echo "Image Tag: ${IMAGE_TAG}"
           echo "Namespace: ${{ env.DEPLOY_ENV }}"
-          
-          # Metrics server uyarılarını bastırmak için
+
+
           export KUBECTL_INTERACTIVE_TIMEOUT=30s
-          
-          # Storage class'ı kontrol et ve ayarla
+
+
           DEFAULT_STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || echo "")
           if [ -z "$DEFAULT_STORAGE_CLASS" ]; then
-            # Varsayılan yoksa, ilk storage class'ı kullan veya local-path dene
+
             STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "local-path")
           else
             STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
           fi
-          
+
           echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
-          
-          # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır
-          # Helm PostgreSQL'leri doğru storage class ile yönetecek
+
+
+
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
@@ -255,8 +255,8 @@ jobs:
                 echo "ℹ️  Mevcut StatefulSet'ler farklı storage class kullanıyor."
                 echo "ℹ️  Verileri korumak için StatefulSet'ler değiştirilmiyor."
                 echo "ℹ️  Sadece diğer servisler güncelleniyor..."
-                
-                # StatefulSet'leri atlayarak diğer servisleri güncelle
+
+
                 helm upgrade --install aws-k8s-helm . \
                   --namespace=${{ env.DEPLOY_ENV }} \
                   --values=values.yaml \
@@ -274,7 +274,7 @@ jobs:
                   --set secrets.authApi.jwtRefreshSecret="${{ secrets.AUTH_JWT_REFRESH_SECRET }}" \
                   --set secrets.authApi.databaseUrl="${{ secrets.AUTH_DATABASE_URL }}" \
                   --set secrets.productApi.databaseUrl="${{ secrets.PRODUCT_DATABASE_URL }}"
-                
+
                 echo ""
                 echo "✅ Diğer servisler güncellendi. PostgreSQL StatefulSet'leri korundu."
                 echo "ℹ️  PostgreSQL'leri güncellemek için manuel olarak scale down/up yapabilirsiniz."
@@ -284,7 +284,7 @@ jobs:
                 exit 1
               fi
             }
-          
+
           echo "✅ Helm deployment tamamlandı. Pod'lar arka planda başlatılıyor..."
 
       - name: Check PVC Status
@@ -306,9 +306,9 @@ jobs:
       - name: Check Pod Status
         if: always()
         run: |
-          # Metrics server uyarılarını bastırmak için
+
           export KUBECTL_INTERACTIVE_TIMEOUT=30s
-          
+
           echo "## 📊 Pod Durumları" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide --request-timeout=30s 2>/dev/null >> $GITHUB_STEP_SUMMARY || kubectl get pods -n ${{ env.DEPLOY_ENV }} -o wide >> $GITHUB_STEP_SUMMARY

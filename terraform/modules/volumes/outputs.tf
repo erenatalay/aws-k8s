@@ -1,6 +1,6 @@
-# ============================================================================
-# VOLUMES MODULE - OUTPUTS
-# ============================================================================
+
+
+
 
 output "postgres_auth_volume_id" {
   description = "PostgreSQL Auth volume ID"
