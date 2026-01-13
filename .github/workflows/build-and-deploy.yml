@@ -21,8 +21,45 @@ env:
   REGISTRY: docker.io
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   ENVIRONMENT: production
+  TF_VERSION: '1.5.0'
+  TF_WORKING_DIR: './terraform'
 
 jobs:
+  # ============================================================================
+  # JOB 0: Terraform Apply
+  # ============================================================================
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+            -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+            -var-file="terraform-simple.tfvars"
+
   # ============================================================================
   # JOB 1: Build Images
   # ============================================================================
@@ -31,6 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     # Push'ta veya manuel build-and-deploy/build-only seçildiğinde çalışır
     if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
+    needs: [terraform]
     
     steps:
       - name: Checkout
