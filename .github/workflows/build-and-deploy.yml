@@ -53,6 +53,30 @@ jobs:
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
 
+      - name: Terraform Import Existing Resources
+        run: |
+          set -e
+          if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
+            terraform state show hcloud_network.main >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network.main "${HCLOUD_NETWORK_ID}"
+          fi
+
+          if [ -n "${HCLOUD_FIREWALL_ID:-}" ]; then
+            terraform state show hcloud_firewall.cluster >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_firewall.cluster "${HCLOUD_FIREWALL_ID}"
+          fi
+        env:
+          HCLOUD_NETWORK_ID: ${{ secrets.HCLOUD_NETWORK_ID }}
+          HCLOUD_FIREWALL_ID: ${{ secrets.HCLOUD_FIREWALL_ID }}
+
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \
