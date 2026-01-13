@@ -88,9 +88,35 @@ jobs:
                 hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}-10.0.1.0/24"
             fi
           fi
+
+          if [ -n "${HCLOUD_CONTROL_PLANE_ID:-}" ]; then
+            terraform state show hcloud_server.control_plane >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_server.control_plane "${HCLOUD_CONTROL_PLANE_ID}"
+          fi
+
+          if [ -n "${HCLOUD_WORKER_IDS:-}" ]; then
+            IFS=',' read -r -a WORKER_IDS <<< "${HCLOUD_WORKER_IDS}"
+            for i in "${!WORKER_IDS[@]}"; do
+              WORKER_ID="${WORKER_IDS[$i]}"
+              if [ -n "$WORKER_ID" ]; then
+                terraform state show "hcloud_server.workers[$i]" >/dev/null 2>&1 || \
+                  terraform import \
+                    -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                    -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                    -var-file="terraform-simple.tfvars" \
+                    "hcloud_server.workers[$i]" "${WORKER_ID}"
+              fi
+            done
+          fi
         env:
           HCLOUD_NETWORK_ID: ${{ secrets.HCLOUD_NETWORK_ID }}
           HCLOUD_FIREWALL_ID: ${{ secrets.HCLOUD_FIREWALL_ID }}
+          HCLOUD_CONTROL_PLANE_ID: ${{ secrets.HCLOUD_CONTROL_PLANE_ID }}
+          HCLOUD_WORKER_IDS: ${{ secrets.HCLOUD_WORKER_IDS }}
 
       - name: Terraform Apply
         run: |
