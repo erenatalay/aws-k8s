@@ -73,6 +73,21 @@ jobs:
                 -var-file="terraform-simple.tfvars" \
                 hcloud_firewall.cluster "${HCLOUD_FIREWALL_ID}"
           fi
+
+          if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
+            if ! terraform state show hcloud_network_subnet.kubernetes >/dev/null 2>&1; then
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}:10.0.1.0/24" || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}-10.0.1.0/24"
+            fi
+          fi
         env:
           HCLOUD_NETWORK_ID: ${{ secrets.HCLOUD_NETWORK_ID }}
           HCLOUD_FIREWALL_ID: ${{ secrets.HCLOUD_FIREWALL_ID }}
