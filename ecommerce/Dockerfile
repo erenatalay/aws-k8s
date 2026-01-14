@@ -14,7 +14,7 @@ COPY . .
 
 
 
-ARG NEXT_PUBLIC_GRAPHQL_URL=http://ecommerce.local/graphql
+ARG NEXT_PUBLIC_GRAPHQL_URL=http://ecommerce.local:30080/graphql
 
 
 ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL
