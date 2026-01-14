@@ -245,7 +245,9 @@ postgresql-auth:
     username: "postgres"
     password: ""
   image:
-    tag: "latest"
+    registry: "docker.io"
+    repository: "bitnami/postgresql"
+    tag: "16.2.0"
   primary:
     persistence:
       enabled: true
