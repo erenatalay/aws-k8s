@@ -242,7 +242,7 @@ postgresql-auth:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "16"
+    tag: "latest"
   primary:
     persistence:
       enabled: true
@@ -265,7 +265,7 @@ postgresql-product:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "16"
+    tag: "latest"
   primary:
     persistence:
       enabled: true
