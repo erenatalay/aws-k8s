@@ -300,8 +300,9 @@ jobs:
         run: |
           helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
           helm repo update
-          
-          # Önce mevcut kaynakları Helm'e adopt et
+
+          echo "📦 Mevcut Metrics Server kaynakları Helm'e aktarılıyor..."
+
           kubectl label clusterrole system:metrics-server app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
           kubectl annotate clusterrole system:metrics-server meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
           kubectl annotate clusterrole system:metrics-server meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
@@ -310,10 +311,32 @@ jobs:
           kubectl annotate clusterrolebinding system:metrics-server meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
           kubectl annotate clusterrolebinding system:metrics-server meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
           
-          kubectl label clusterrolebinding metrics-server:system:auth-delegator app.kubernetes.io/managed-by=Helm -n kube-system --overwrite 2>/dev/null || true
+          kubectl label clusterrolebinding metrics-server:system:auth-delegator app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
           kubectl annotate clusterrolebinding metrics-server:system:auth-delegator meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
           kubectl annotate clusterrolebinding metrics-server:system:auth-delegator meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
-          
+
+          kubectl label rolebinding metrics-server-auth-reader -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+          kubectl annotate rolebinding metrics-server-auth-reader -n kube-system meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
+          kubectl annotate rolebinding metrics-server-auth-reader -n kube-system meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
+
+          kubectl label service metrics-server -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+          kubectl annotate service metrics-server -n kube-system meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
+          kubectl annotate service metrics-server -n kube-system meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
+
+          kubectl label deployment metrics-server -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+          kubectl annotate deployment metrics-server -n kube-system meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
+          kubectl annotate deployment metrics-server -n kube-system meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
+
+          kubectl label serviceaccount metrics-server -n kube-system app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+          kubectl annotate serviceaccount metrics-server -n kube-system meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
+          kubectl annotate serviceaccount metrics-server -n kube-system meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
+
+          kubectl label apiservice v1beta1.metrics.k8s.io app.kubernetes.io/managed-by=Helm --overwrite 2>/dev/null || true
+          kubectl annotate apiservice v1beta1.metrics.k8s.io meta.helm.sh/release-name=metrics-server --overwrite 2>/dev/null || true
+          kubectl annotate apiservice v1beta1.metrics.k8s.io meta.helm.sh/release-namespace=kube-system --overwrite 2>/dev/null || true
+
+          echo "✅ Kaynaklar Helm'e aktarıldı"
+
           # Şimdi Helm ile yükle/güncelle
           helm upgrade --install metrics-server metrics-server/metrics-server \
             --namespace kube-system \
