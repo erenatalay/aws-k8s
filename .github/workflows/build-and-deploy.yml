@@ -305,7 +305,9 @@ jobs:
             --set args[0]=--kubelet-insecure-tls \
             --set args[1]=--kubelet-preferred-address-types=InternalIP \
             --set args[2]=--kubelet-preferred-address-types=ExternalIP \
-            --set args[3]=--kubelet-preferred-address-types=Hostname
+            --set args[3]=--kubelet-preferred-address-types=Hostname \
+            --set serviceAccount.create=false \
+            --set serviceAccount.name=metrics-server
 
       - name: Detect Storage Class
         id: storage
