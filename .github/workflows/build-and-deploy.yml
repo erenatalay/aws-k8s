@@ -191,6 +191,7 @@ jobs:
     if: always() && needs.build.result == 'success'
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
+      KUBECONFIG: /home/runner/.kube/config
     
     steps:
       - name: Checkout
@@ -208,6 +209,7 @@ jobs:
 
       - name: Setup SSH and Kubeconfig
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh ~/.kube
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
@@ -221,6 +223,10 @@ jobs:
             sed "s/127.0.0.1/$MASTER_IP/g" > ~/.kube/config
           
           chmod 600 ~/.kube/config
+          if [ ! -s ~/.kube/config ]; then
+            echo "Kubeconfig yazilamadi veya bos. SSH ve MASTER_IP bilgilerini kontrol edin."
+            exit 1
+          fi
 
       - name: Verify cluster connection
         run: |
