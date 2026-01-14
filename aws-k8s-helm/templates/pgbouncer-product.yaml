@@ -1,0 +1,95 @@
+{{- if and .Values.pgbouncer.enabled .Values.pgbouncer.product.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-pgbouncer-product
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer-product
+data:
+  pgbouncer.ini: |
+    [databases]
+    product = host={{ .Release.Name }}-postgresql-product port=5432 dbname={{ index .Values "postgresql-product" "auth" "database" }} user={{ index .Values "postgresql-product" "auth" "username" }} password={{ index .Values "postgresql-product" "auth" "password" }}
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = {{ .Values.pgbouncer.product.port }}
+    auth_type = plain
+    auth_file = /etc/pgbouncer/userlist.txt
+    pool_mode = {{ .Values.pgbouncer.product.poolMode }}
+    max_client_conn = {{ .Values.pgbouncer.product.maxClientConn }}
+    default_pool_size = {{ .Values.pgbouncer.product.defaultPoolSize }}
+    ignore_startup_parameters = extra_float_digits
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-pgbouncer-product-users
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer-product
+type: Opaque
+stringData:
+  userlist.txt: |
+    "{{ index .Values "postgresql-product" "auth" "username" }}" "{{ index .Values "postgresql-product" "auth" "password" }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pgbouncer.product.serviceName }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer-product
+spec:
+  type: ClusterIP
+  ports:
+    - name: pgbouncer
+      port: {{ .Values.pgbouncer.product.port }}
+      targetPort: pgbouncer
+  selector:
+    {{- include "chart.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer-product
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pgbouncer-product
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer-product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: pgbouncer-product
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: pgbouncer-product
+    spec:
+      containers:
+        - name: pgbouncer-product
+          image: "{{ .Values.pgbouncer.image.repository }}:{{ .Values.pgbouncer.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          command: ["pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]
+          ports:
+            - name: pgbouncer
+              containerPort: {{ .Values.pgbouncer.product.port }}
+          resources:
+            {{- toYaml .Values.pgbouncer.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pgbouncer/pgbouncer.ini
+              subPath: pgbouncer.ini
+            - name: users
+              mountPath: /etc/pgbouncer/userlist.txt
+              subPath: userlist.txt
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-pgbouncer-product
+        - name: users
+          secret:
+            secretName: {{ .Release.Name }}-pgbouncer-product-users
+{{- end }}

@@ -37,6 +37,12 @@ spec:
           runAsUser: 1001
           allowPrivilegeEscalation: false
       {{- end }}
+      {{- $productDbHost := printf "%s-postgresql-product" .Release.Name }}
+      {{- $productDbPort := 5432 }}
+      {{- if and .Values.pgbouncer.enabled .Values.pgbouncer.product.enabled }}
+      {{- $productDbHost = .Values.pgbouncer.product.serviceName }}
+      {{- $productDbPort = .Values.pgbouncer.product.port }}
+      {{- end }}
       containers:
       - name: {{ .Values.productApi.name }}
         {{- if .Values.global.imageRegistry }}
@@ -55,7 +61,7 @@ spec:
         - name: PORT
           value: {{ .Values.productApi.env.PORT | quote }}
         - name: DATABASE_URL
-          value: "postgresql://{{ index .Values "postgresql-product" "auth" "username" }}:{{ index .Values "postgresql-product" "auth" "password" }}@{{ .Release.Name }}-postgresql-product:5432/{{ index .Values "postgresql-product" "auth" "database" }}?schema=public"
+          value: "postgresql://{{ index .Values "postgresql-product" "auth" "username" }}:{{ index .Values "postgresql-product" "auth" "password" }}@{{ $productDbHost }}:{{ $productDbPort }}/{{ index .Values "postgresql-product" "auth" "database" }}?schema=public"
         - name: AUTH_SERVICE_URL
           value: {{ .Values.productApi.env.AUTH_SERVICE_URL | quote }}
         {{- if .Values.productApi.env.JWT_SECRET }}
@@ -101,4 +107,3 @@ spec:
         resources:
           {{- toYaml .Values.productApi.resources | nindent 10 }}
 {{- end }}
-

@@ -284,7 +284,54 @@ jobs:
             --create-namespace \
             --set controller.service.type=NodePort \
             --set controller.service.nodePorts.http=30080 \
-            --set controller.service.nodePorts.https=30443
+            --set controller.service.nodePorts.https=30443 \
+            --set controller.config.keep-alive=75 \
+            --set controller.config.keep-alive-requests=1000 \
+            --set controller.config.proxy-read-timeout=120 \
+            --set controller.config.proxy-send-timeout=120 \
+            --set controller.config.proxy-body-size=50m \
+            --set controller.config.use-gzip=true \
+            --set controller.config.gzip-types="text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml" \
+            --set controller.config.enable-brotli=true \
+            --set controller.config.brotli-level=5 \
+            --set controller.config.brotli-types="text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml"
+
+      - name: Install/Upgrade Metrics Server
+        run: |
+          helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+          helm repo update
+          helm upgrade --install metrics-server metrics-server/metrics-server \
+            --namespace kube-system \
+            --set args[0]=--kubelet-insecure-tls \
+            --set args[1]=--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+
+      - name: Detect Storage Class
+        id: storage
+        run: |
+          DEFAULT_STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || echo "")
+          if [ -z "$DEFAULT_STORAGE_CLASS" ]; then
+            STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "local-path")
+          else
+            STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
+          fi
+          echo "name=$STORAGE_CLASS" >> "$GITHUB_OUTPUT"
+
+      - name: Install/Upgrade Prometheus Stack
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            --create-namespace \
+            --set grafana.adminPassword=admin \
+            --set grafana.persistence.enabled=true \
+            --set grafana.persistence.size=5Gi \
+            --set grafana.persistence.storageClassName=${{ steps.storage.outputs.name }} \
+            --set prometheus.prometheusSpec.retention=15d \
+            --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName=${{ steps.storage.outputs.name }} \
+            --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage=20Gi \
+            --set alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.spec.storageClassName=${{ steps.storage.outputs.name }} \
+            --set alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.spec.resources.requests.storage=10Gi
 
       - name: Verify Required Secrets
         run: |
@@ -332,15 +379,7 @@ jobs:
           # Metrics server uyarılarını bastırmak için
           export KUBECTL_INTERACTIVE_TIMEOUT=30s
           
-          # Storage class'ı kontrol et ve ayarla
-          DEFAULT_STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || echo "")
-          if [ -z "$DEFAULT_STORAGE_CLASS" ]; then
-            # Varsayılan yoksa, ilk storage class'ı kullan veya local-path dene
-            STORAGE_CLASS=$(kubectl get storageclass -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "local-path")
-          else
-            STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
-          fi
-          
+          STORAGE_CLASS="${{ steps.storage.outputs.name }}"
           echo "📦 Kullanılacak Storage Class: ${STORAGE_CLASS}"
           
           # Helm deployment - --wait olmadan, pod'lar arka planda başlatılır

@@ -37,6 +37,12 @@ spec:
           runAsUser: 1001
           allowPrivilegeEscalation: false
       {{- end }}
+      {{- $authDbHost := printf "%s-postgresql-auth" .Release.Name }}
+      {{- $authDbPort := 5432 }}
+      {{- if and .Values.pgbouncer.enabled .Values.pgbouncer.auth.enabled }}
+      {{- $authDbHost = .Values.pgbouncer.auth.serviceName }}
+      {{- $authDbPort = .Values.pgbouncer.auth.port }}
+      {{- end }}
       containers:
       - name: {{ .Values.authApi.name }}
         {{- if .Values.global.imageRegistry }}
@@ -55,7 +61,7 @@ spec:
         - name: PORT
           value: {{ .Values.authApi.env.PORT | quote }}
         - name: DATABASE_URL
-          value: "postgresql://{{ index .Values "postgresql-auth" "auth" "username" }}:{{ index .Values "postgresql-auth" "auth" "password" }}@{{ .Release.Name }}-postgresql-auth:5432/{{ index .Values "postgresql-auth" "auth" "database" }}?schema=public"
+          value: "postgresql://{{ index .Values "postgresql-auth" "auth" "username" }}:{{ index .Values "postgresql-auth" "auth" "password" }}@{{ $authDbHost }}:{{ $authDbPort }}/{{ index .Values "postgresql-auth" "auth" "database" }}?schema=public"
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
@@ -117,4 +123,3 @@ spec:
         resources:
           {{- toYaml .Values.authApi.resources | nindent 10 }}
 {{- end }}
-

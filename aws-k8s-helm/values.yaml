@@ -29,16 +29,16 @@ authApi:
     targetPort: 3001
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 1000m
+      memory: 1Gi
     requests:
-      cpu: 50m
-      memory: 64Mi
+      cpu: 200m
+      memory: 256Mi
   autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 70
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 60
   env:
     JWT_EXPIRES_IN: "7d"
     JWT_REFRESH_EXPIRES_IN: "7d"
@@ -91,16 +91,16 @@ productApi:
     targetPort: 3002
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 1000m
+      memory: 1Gi
     requests:
-      cpu: 50m
-      memory: 64Mi
+      cpu: 200m
+      memory: 256Mi
   autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 70
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 60
   env:
     AUTH_SERVICE_URL: "http://auth-api:3001"
     JWT_SECRET: ""
@@ -242,7 +242,7 @@ postgresql-auth:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "latest"
+    tag: "sha256:4d03dc76bfa6e7e7d3b63ffd3faa6d2485e1f31603e0a8b6e8907ffb5beb79d4"
   primary:
     persistence:
       enabled: true
@@ -250,11 +250,11 @@ postgresql-auth:
       storageClass: "local-path"
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
         memory: "512Mi"
-        cpu: "500m"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
 
 postgresql-product:
   enabled: true
@@ -265,7 +265,7 @@ postgresql-product:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "latest"
+    tag: "sha256:4d03dc76bfa6e7e7d3b63ffd3faa6d2485e1f31603e0a8b6e8907ffb5beb79d4"
   primary:
     persistence:
       enabled: true
@@ -273,11 +273,38 @@ postgresql-product:
       storageClass: "local-path"
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
         memory: "512Mi"
-        cpu: "500m"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+pgbouncer:
+  enabled: true
+  image:
+    repository: "edoburu/pgbouncer"
+    tag: "1.21.0"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  auth:
+    enabled: true
+    serviceName: "pgbouncer-auth"
+    port: 6432
+    poolMode: "transaction"
+    maxClientConn: 200
+    defaultPoolSize: 20
+  product:
+    enabled: true
+    serviceName: "pgbouncer-product"
+    port: 6432
+    poolMode: "transaction"
+    maxClientConn: 200
+    defaultPoolSize: 20
 
 ingress:
   enabled: true
