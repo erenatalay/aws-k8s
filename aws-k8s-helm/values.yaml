@@ -245,9 +245,8 @@ postgresql-auth:
     username: "postgres"
     password: ""
   image:
-    registry: "docker.io"
     repository: "bitnami/postgresql"
-    tag: "16.2.0"
+    tag: "16.2.0-debian-11-r0"
   primary:
     persistence:
       enabled: true
@@ -269,9 +268,8 @@ postgresql-product:
     username: "postgres"
     password: ""
   image:
-    registry: "docker.io"
     repository: "bitnami/postgresql"
-    tag: "16.2.0"
+    tag: "16.2.0-debian-11-r0"
   primary:
     persistence:
       enabled: true
