@@ -211,7 +211,7 @@ ecommerce:
   env:
     NEXT_PUBLIC_AUTH_API_URL: "http://auth.ecommerce.local"
     NEXT_PUBLIC_PRODUCT_API_URL: "http://product.ecommerce.local"
-    NEXT_PUBLIC_GRAPHQL_URL: "http://api.ecommerce.local/graphql"
+    NEXT_PUBLIC_GRAPHQL_URL: "http://ecommerce.local/graphql"
     COOKIE_DOMAIN: ".ecommerce.local"
     COOKIE_SECURE: "false"
     NODE_ENV: "production"
@@ -293,7 +293,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-        - path: /api
+        - path: /graphql
           pathType: Prefix
           backend:
             serviceName: "gateway"
