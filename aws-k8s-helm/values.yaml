@@ -1,11 +1,7 @@
-
-
-
 global:
   imageRegistry: "docker.io"
   imagePullSecrets: []
   storageClass: "local-path"
-
 
 networkPolicy:
   enabled: false
@@ -246,7 +242,7 @@ postgresql-auth:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "16.2.0-debian-11-r0"
+    tag: "16"
   primary:
     persistence:
       enabled: true
@@ -269,7 +265,7 @@ postgresql-product:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "16.2.0-debian-11-r0"
+    tag: "16"
   primary:
     persistence:
       enabled: true
@@ -293,7 +289,6 @@ ingress:
     cert-manager.io/cluster-issuer: ""
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-
     - host: "ecommerce.local"
       paths:
         - path: /
