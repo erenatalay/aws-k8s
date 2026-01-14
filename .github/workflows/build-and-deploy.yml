@@ -337,7 +337,7 @@ jobs:
           helm upgrade --install aws-k8s-helm . \
             --namespace=${{ env.DEPLOY_ENV }} \
             --values=values.yaml \
-            --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+            --set global.imageRegistry=docker.io \
             --set global.storageClass="${STORAGE_CLASS}" \
             --set authApi.image.tag="${IMAGE_TAG}" \
             --set productApi.image.tag="${IMAGE_TAG}" \
@@ -369,7 +369,7 @@ jobs:
                 helm upgrade --install aws-k8s-helm . \
                   --namespace=${{ env.DEPLOY_ENV }} \
                   --values=values.yaml \
-                  --set global.imageRegistry=docker.io/${{ secrets.DOCKER_USERNAME }} \
+                  --set global.imageRegistry=docker.io \
                   --set authApi.image.tag="${IMAGE_TAG}" \
                   --set productApi.image.tag="${IMAGE_TAG}" \
                   --set gateway.image.tag="${IMAGE_TAG}" \
