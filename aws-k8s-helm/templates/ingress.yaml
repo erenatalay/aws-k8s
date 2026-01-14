@@ -56,7 +56,11 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                {{- if $isApiHost }}
+                {{- if .backend }}
+                name: {{ .backend.serviceName }}
+                port:
+                  number: {{ .backend.servicePort }}
+                {{- else if $isApiHost }}
                 name: {{ $.Values.gateway.name }}
                 port:
                   number: {{ $.Values.gateway.service.port }}

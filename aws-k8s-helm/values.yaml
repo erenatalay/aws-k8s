@@ -293,21 +293,11 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-
-    - host: "api.ecommerce.local"
-      paths:
-        - path: /
+        - path: /api
           pathType: Prefix
-
-    - host: "auth.ecommerce.local"
-      paths:
-        - path: /
-          pathType: Prefix
-
-    - host: "product.ecommerce.local"
-      paths:
-        - path: /
-          pathType: Prefix
+          backend:
+            serviceName: "gateway"
+            servicePort: 4000
   tls: []
 
 secrets:
