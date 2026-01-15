@@ -29,10 +29,6 @@ spec:
         runAsUser: 1001
       {{- $productDbHost := printf "%s-postgresql-product" .Release.Name }}
       {{- $productDbPort := 5432 }}
-      {{- if and .Values.pgbouncer.enabled .Values.pgbouncer.product.enabled }}
-      {{- $productDbHost = .Values.pgbouncer.product.serviceName }}
-      {{- $productDbPort = .Values.pgbouncer.product.port }}
-      {{- end }}
       {{- if .Values.productApi.initContainers.waitForDb.enabled }}
       initContainers:
       - name: wait-for-db

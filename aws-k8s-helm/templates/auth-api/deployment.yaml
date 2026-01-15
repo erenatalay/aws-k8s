@@ -29,10 +29,6 @@ spec:
         runAsUser: 1001
       {{- $authDbHost := printf "%s-postgresql-auth" .Release.Name }}
       {{- $authDbPort := 5432 }}
-      {{- if and .Values.pgbouncer.enabled .Values.pgbouncer.auth.enabled }}
-      {{- $authDbHost = .Values.pgbouncer.auth.serviceName }}
-      {{- $authDbPort = .Values.pgbouncer.auth.port }}
-      {{- end }}
       {{- if .Values.authApi.initContainers.waitForDb.enabled }}
       initContainers:
       - name: wait-for-db
