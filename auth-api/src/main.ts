@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -16,6 +17,28 @@ import { SwaggerService } from './swagger/swagger.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  app.use((req, res, next) => {
+    const headerValue = req.headers['x-request-id'];
+    const requestId =
+      typeof headerValue === 'string' && headerValue.length > 0
+        ? headerValue
+        : randomUUID();
+
+    (req.headers as Record<string, string>)['x-request-id'] = requestId;
+    res.setHeader('x-request-id', requestId);
+
+    const startedAt = process.hrtime.bigint();
+    res.on('finish', () => {
+      const durationMs =
+        Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      Logger.log(
+        `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs.toFixed(1)}ms`,
+      );
+    });
+
+    next();
+  });
 
   setupGracefulShutdown({ app });
 

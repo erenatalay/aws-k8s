@@ -6,13 +6,16 @@ import {
   GraphQLDataSourceProcessOptions,
 } from '@apollo/gateway';
 import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
+import {
+  ApolloServerPlugin,
+  GraphQLRequestContextWillSendResponse,
+} from '@apollo/server';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-
 
 enum ErrorCode {
   UNAUTHENTICATED = 'UNAUTHENTICATED',
@@ -25,7 +28,6 @@ enum ErrorCode {
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 }
-
 
 const errorCodeToStatus: Record<string, number> = {
   [ErrorCode.UNAUTHENTICATED]: 401,
@@ -51,7 +53,6 @@ interface ErrorExtensions {
   details?: Record<string, unknown>;
 }
 
-
 class AuthenticatedDataSource extends RemoteGraphQLDataSource {
   override willSendRequest(options: GraphQLDataSourceProcessOptions): void {
     const { request, context } = options;
@@ -59,24 +60,20 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
 
     const ctx = context as { req?: Request };
 
-
     const authorization = ctx.req?.headers?.authorization;
     if (authorization && typeof authorization === 'string') {
       request.http.headers.set('authorization', authorization);
     }
-
 
     const acceptLanguage = ctx.req?.headers?.['accept-language'];
     if (acceptLanguage && typeof acceptLanguage === 'string') {
       request.http.headers.set('accept-language', acceptLanguage);
     }
 
-
     const userAgent = ctx.req?.headers?.['user-agent'];
     if (userAgent && typeof userAgent === 'string') {
       request.http.headers.set('user-agent', userAgent);
     }
-
 
     const requestIdHeader = ctx.req?.headers?.['x-request-id'];
     const requestId =
@@ -101,6 +98,7 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
           context: ({ req, res }: { req: Request; res: Response }) => ({
             req,
             res,
+            requestId: req.headers['x-request-id'],
           }),
           formatError: (
             formattedError: GraphQLFormattedError,
@@ -110,7 +108,6 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
             const code = extensions.code || ErrorCode.INTERNAL_SERVER_ERROR;
             const statusCode =
               extensions.statusCode || errorCodeToStatus[code] || 500;
-
 
             const isDev = configService.get('NODE_ENV') !== 'production';
 
@@ -127,6 +124,38 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
               },
             };
           },
+          plugins: [
+            {
+              requestDidStart: async () => ({
+                willSendResponse: async (
+                  requestContext: GraphQLRequestContextWillSendResponse<{
+                    requestId?: string;
+                  }>,
+                ) => {
+                  const requestId = requestContext.contextValue?.requestId;
+                  if (!requestId) return;
+
+                  const body = (requestContext.response as any).body;
+                  if (!body || body.kind !== 'single') return;
+
+                  const result = body.singleResult;
+                  result.extensions = {
+                    ...(result.extensions || {}),
+                    requestId,
+                  };
+                  if (result.errors) {
+                    result.errors = result.errors.map((err: any) => ({
+                      ...err,
+                      extensions: {
+                        ...(err.extensions || {}),
+                        requestId,
+                      },
+                    }));
+                  }
+                },
+              }),
+            } as ApolloServerPlugin,
+          ],
         },
         gateway: {
           supergraphSdl: new IntrospectAndCompose({
