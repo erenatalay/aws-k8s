@@ -27,21 +27,21 @@ spec:
         fsGroup: 1001
         runAsNonRoot: true
         runAsUser: 1001
-      {{- if .Values.authApi.initContainers.waitForDb.enabled }}
-      initContainers:
-      - name: wait-for-db
-        image: {{ .Values.authApi.initContainers.waitForDb.image }}
-        command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-postgresql-auth 5432; do echo "Waiting for PostgreSQL..."; sleep 2; done; echo "PostgreSQL is ready!"']
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1001
-          allowPrivilegeEscalation: false
-      {{- end }}
       {{- $authDbHost := printf "%s-postgresql-auth" .Release.Name }}
       {{- $authDbPort := 5432 }}
       {{- if and .Values.pgbouncer.enabled .Values.pgbouncer.auth.enabled }}
       {{- $authDbHost = .Values.pgbouncer.auth.serviceName }}
       {{- $authDbPort = .Values.pgbouncer.auth.port }}
+      {{- end }}
+      {{- if .Values.authApi.initContainers.waitForDb.enabled }}
+      initContainers:
+      - name: wait-for-db
+        image: {{ .Values.authApi.initContainers.waitForDb.image }}
+        command: ['sh', '-c', 'until nc -z {{ $authDbHost }} {{ $authDbPort }}; do echo "Waiting for PostgreSQL..."; sleep 2; done; echo "PostgreSQL is ready!"']
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
       {{- end }}
       containers:
       - name: {{ .Values.authApi.name }}

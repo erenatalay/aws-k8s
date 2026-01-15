@@ -283,7 +283,7 @@ pgbouncer:
   enabled: true
   image:
     repository: "edoburu/pgbouncer"
-    tag: "1.21.0"
+    tag: "v1.25.1-p0"
   resources:
     requests:
       cpu: "50m"

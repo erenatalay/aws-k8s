@@ -283,6 +283,7 @@ jobs:
             --namespace ingress-nginx \
             --create-namespace \
             --set controller.service.type=NodePort \
+            --set controller.service.externalTrafficPolicy=Local \
             --set controller.service.nodePorts.http=30080 \
             --set controller.service.nodePorts.https=30443 \
             --set controller.config.keep-alive=75 \
