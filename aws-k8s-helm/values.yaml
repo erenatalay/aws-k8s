@@ -242,7 +242,7 @@ postgresql-auth:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "postgresql:16.2.0-debian-12-r8"
+    tag: "16.2.0-debian-12-r8"
   primary:
     persistence:
       enabled: true
@@ -265,7 +265,7 @@ postgresql-product:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "postgresql:16.2.0-debian-12-r8"
+    tag: "16.2.0-debian-12-r8"
   primary:
     persistence:
       enabled: true
