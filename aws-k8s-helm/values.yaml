@@ -242,7 +242,7 @@ postgresql-auth:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "sha256-3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
+    digest: "sha256:3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
   primary:
     persistence:
       enabled: true
@@ -265,7 +265,7 @@ postgresql-product:
     password: ""
   image:
     repository: "bitnami/postgresql"
-    tag: "sha256-3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
+    digest: "sha256:3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
   primary:
     persistence:
       enabled: true
