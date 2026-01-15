@@ -335,6 +335,7 @@ ingress:
             servicePort: 4000
   tls: []
 
+#
 secrets:
   authApi:
     jwtSecret: ""
