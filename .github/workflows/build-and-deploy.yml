@@ -28,158 +28,158 @@ jobs:
   # # ============================================================================
   # # JOB 0: Terraform Apply
   # # ============================================================================
-  # terraform:
-  #   name: 'Terraform Apply'
-  #   runs-on: ubuntu-latest
-  #   environment: production
-  #   if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
 
-  #   defaults:
-  #     run:
-  #       working-directory: ${{ env.TF_WORKING_DIR }}
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: ${{ env.TF_VERSION }}
-  #         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-  #     - name: Terraform Init
-  #       run: terraform init
-  #       env:
-  #         HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      - name: Terraform Init
+        run: terraform init
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
 
-  #     - name: Terraform Import Existing Resources
-  #       run: |
-  #         set -e
-  #         if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
-  #           terraform state show hcloud_network.main >/dev/null 2>&1 || \
-  #             terraform import \
-  #               -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #               -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #               -var-file="terraform-simple.tfvars" \
-  #               hcloud_network.main "${HCLOUD_NETWORK_ID}"
-  #         fi
+      - name: Terraform Import Existing Resources
+        run: |
+          set -e
+          if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
+            terraform state show hcloud_network.main >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network.main "${HCLOUD_NETWORK_ID}"
+          fi
 
-  #         if [ -n "${HCLOUD_FIREWALL_ID:-}" ]; then
-  #           terraform state show hcloud_firewall.cluster >/dev/null 2>&1 || \
-  #             terraform import \
-  #               -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #               -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #               -var-file="terraform-simple.tfvars" \
-  #               hcloud_firewall.cluster "${HCLOUD_FIREWALL_ID}"
-  #         fi
+          if [ -n "${HCLOUD_FIREWALL_ID:-}" ]; then
+            terraform state show hcloud_firewall.cluster >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_firewall.cluster "${HCLOUD_FIREWALL_ID}"
+          fi
 
-  #         if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
-  #           if ! terraform state show hcloud_network_subnet.kubernetes >/dev/null 2>&1; then
-  #             terraform import \
-  #               -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #               -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #               -var-file="terraform-simple.tfvars" \
-  #               hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}:10.0.1.0/24" || \
-  #             terraform import \
-  #               -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #               -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #               -var-file="terraform-simple.tfvars" \
-  #               hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}-10.0.1.0/24"
-  #           fi
-  #         fi
+          if [ -n "${HCLOUD_NETWORK_ID:-}" ]; then
+            if ! terraform state show hcloud_network_subnet.kubernetes >/dev/null 2>&1; then
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}:10.0.1.0/24" || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_network_subnet.kubernetes "${HCLOUD_NETWORK_ID}-10.0.1.0/24"
+            fi
+          fi
 
-  #         if [ -n "${HCLOUD_CONTROL_PLANE_ID:-}" ]; then
-  #           terraform state show hcloud_server.control_plane >/dev/null 2>&1 || \
-  #             terraform import \
-  #               -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #               -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #               -var-file="terraform-simple.tfvars" \
-  #               hcloud_server.control_plane "${HCLOUD_CONTROL_PLANE_ID}"
-  #         fi
+          if [ -n "${HCLOUD_CONTROL_PLANE_ID:-}" ]; then
+            terraform state show hcloud_server.control_plane >/dev/null 2>&1 || \
+              terraform import \
+                -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                -var-file="terraform-simple.tfvars" \
+                hcloud_server.control_plane "${HCLOUD_CONTROL_PLANE_ID}"
+          fi
 
-  #         if [ -n "${HCLOUD_WORKER_IDS:-}" ]; then
-  #           IFS=',' read -r -a WORKER_IDS <<< "${HCLOUD_WORKER_IDS}"
-  #           for i in "${!WORKER_IDS[@]}"; do
-  #             WORKER_ID="${WORKER_IDS[$i]}"
-  #             if [ -n "$WORKER_ID" ]; then
-  #               terraform state show "hcloud_server.workers[$i]" >/dev/null 2>&1 || \
-  #                 terraform import \
-  #                   -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #                   -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #                   -var-file="terraform-simple.tfvars" \
-  #                   "hcloud_server.workers[$i]" "${WORKER_ID}"
-  #             fi
-  #           done
-  #         fi
-  #       env:
-  #         HCLOUD_NETWORK_ID: ${{ secrets.HCLOUD_NETWORK_ID }}
-  #         HCLOUD_FIREWALL_ID: ${{ secrets.HCLOUD_FIREWALL_ID }}
-  #         HCLOUD_CONTROL_PLANE_ID: ${{ secrets.HCLOUD_CONTROL_PLANE_ID }}
-  #         HCLOUD_WORKER_IDS: ${{ secrets.HCLOUD_WORKER_IDS }}
+          if [ -n "${HCLOUD_WORKER_IDS:-}" ]; then
+            IFS=',' read -r -a WORKER_IDS <<< "${HCLOUD_WORKER_IDS}"
+            for i in "${!WORKER_IDS[@]}"; do
+              WORKER_ID="${WORKER_IDS[$i]}"
+              if [ -n "$WORKER_ID" ]; then
+                terraform state show "hcloud_server.workers[$i]" >/dev/null 2>&1 || \
+                  terraform import \
+                    -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+                    -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+                    -var-file="terraform-simple.tfvars" \
+                    "hcloud_server.workers[$i]" "${WORKER_ID}"
+              fi
+            done
+          fi
+        env:
+          HCLOUD_NETWORK_ID: ${{ secrets.HCLOUD_NETWORK_ID }}
+          HCLOUD_FIREWALL_ID: ${{ secrets.HCLOUD_FIREWALL_ID }}
+          HCLOUD_CONTROL_PLANE_ID: ${{ secrets.HCLOUD_CONTROL_PLANE_ID }}
+          HCLOUD_WORKER_IDS: ${{ secrets.HCLOUD_WORKER_IDS }}
 
-  #     - name: Terraform Apply
-  #       run: |
-  #         terraform apply -auto-approve \
-  #           -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
-  #           -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-  #           -var-file="terraform-simple.tfvars"
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+            -var="hcloud_token=${{ secrets.HCLOUD_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
+            -var-file="terraform-simple.tfvars"
 
   # # ============================================================================
   # # JOB 1: Build Images
   # # ============================================================================
-  # build:
-  #   name: 'Build Docker Images'
-  #   runs-on: ubuntu-latest
-  #   # Push'ta veya manuel build-and-deploy/build-only seçildiğinde çalışır
-  #   if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
-  #   needs: [terraform]
+  build:
+    name: 'Build Docker Images'
+    runs-on: ubuntu-latest
+    # Push'ta veya manuel build-and-deploy/build-only seçildiğinde çalışır
+    if: github.event_name == 'push' || github.event.inputs.action != 'deploy-only'
+    needs: [terraform]
     
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Login to Docker Hub
-  #       uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     - name: Build and Push auth-api
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         context: ./auth-api
-  #         push: true
-  #         tags: |
-  #           ${{ secrets.DOCKER_USERNAME }}/auth-api:${{ github.sha }}
-  #           ${{ secrets.DOCKER_USERNAME }}/auth-api:latest
+      - name: Build and Push auth-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth-api
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/auth-api:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/auth-api:latest
 
-  #     - name: Build and Push product-api
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         context: ./product-api
-  #         push: true
-  #         tags: |
-  #           ${{ secrets.DOCKER_USERNAME }}/product-api:${{ github.sha }}
-  #           ${{ secrets.DOCKER_USERNAME }}/product-api:latest
+      - name: Build and Push product-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./product-api
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/product-api:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/product-api:latest
 
-  #     - name: Build and Push gateway
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         context: ./gateway
-  #         push: true
-  #         tags: |
-  #           ${{ secrets.DOCKER_USERNAME }}/gateway:${{ github.sha }}
-  #           ${{ secrets.DOCKER_USERNAME }}/gateway:latest
+      - name: Build and Push gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./gateway
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/gateway:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/gateway:latest
 
-  #     - name: Build and Push ecommerce
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         context: ./ecommerce
-  #         push: true
-  #         tags: |
-  #           ${{ secrets.DOCKER_USERNAME }}/ecommerce:${{ github.sha }}
-  #           ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
+      - name: Build and Push ecommerce
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ecommerce
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
 
   # # ============================================================================
   # # JOB 2: Deploy to k3s (Build tamamlandıktan sonra)
@@ -187,7 +187,8 @@ jobs:
   deploy:
     name: 'Deploy to k3s'
     runs-on: ubuntu-latest
-    # Build kapalıyken direkt deploy çalışsın
+    needs: [build]
+    if: needs.build.result == 'success' || github.event.inputs.action == 'deploy-only'
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
       KUBECONFIG: /home/runner/.kube/config
