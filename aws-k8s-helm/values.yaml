@@ -283,33 +283,6 @@ postgresql-product:
         memory: "1Gi"
         cpu: "1000m"
 
-pgbouncer:
-  enabled: true
-  image:
-    repository: "edoburu/pgbouncer"
-    tag: "v1.25.1-p0"
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "64Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"
-  auth:
-    enabled: true
-    serviceName: "pgbouncer-auth"
-    port: 6432
-    poolMode: "transaction"
-    maxClientConn: 200
-    defaultPoolSize: 20
-  product:
-    enabled: true
-    serviceName: "pgbouncer-product"
-    port: 6432
-    poolMode: "transaction"
-    maxClientConn: 200
-    defaultPoolSize: 20
-
 ingress:
   enabled: true
   className: "nginx"
