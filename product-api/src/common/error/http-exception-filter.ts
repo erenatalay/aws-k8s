@@ -16,6 +16,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    const requestId = request?.headers?.['x-request-id'];
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'An error occurred, please try again later';
@@ -45,6 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
+      ...(requestId && { requestId }),
 
       ...(typeof errorDetails === 'object' && errorDetails !== null
         ? { errors: errorDetails }
