@@ -4,7 +4,7 @@ metadata:
   name: grafana-internal
   namespace: monitoring
   annotations:
-    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
 spec:
   ingressClassName: nginx
   rules:
@@ -25,7 +25,7 @@ metadata:
   name: prometheus-internal
   namespace: monitoring
   annotations:
-    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
 spec:
   ingressClassName: nginx
   rules:
@@ -46,7 +46,7 @@ metadata:
   name: loki-internal
   namespace: logging
   annotations:
-    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
 spec:
   ingressClassName: nginx
   rules:

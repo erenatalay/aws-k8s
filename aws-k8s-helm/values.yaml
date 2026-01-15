@@ -241,10 +241,10 @@ postgresql-auth:
     username: "postgres"
     password: ""
   image:
-  registry: docker.io
-  repository: bitnami/postgresql
-  tag: "latest"
-  digest: "sha256:2a7dbbb704430870c9f4e76ccf2a532dd0c6be99774d0cb064e0e5b9c6889db1"
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: "latest"
+    digest: "sha256:2a7dbbb704430870c9f4e76ccf2a532dd0c6be99774d0cb064e0e5b9c6889db1"
   primary:
     persistence:
       enabled: true
