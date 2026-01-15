@@ -241,8 +241,10 @@ postgresql-auth:
     username: "postgres"
     password: ""
   image:
-    repository: "bitnami/postgresql"
-    digest: "sha256:3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
+  registry: docker.io
+  repository: bitnami/postgresql
+  tag: 17.6.0-debian-12-r4
+  digest: ""
   primary:
     persistence:
       enabled: true
@@ -264,8 +266,10 @@ postgresql-product:
     username: "postgres"
     password: ""
   image:
-    repository: "bitnami/postgresql"
-    digest: "sha256:3a49168b603ca7956979e7fec71716764dfcf6f76c0558e6c825ef8e5dd239b5"
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: 17.6.0-debian-12-r4
+    digest: ""
   primary:
     persistence:
       enabled: true
