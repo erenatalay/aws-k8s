@@ -187,8 +187,7 @@ jobs:
   deploy:
     name: 'Deploy to k3s'
     runs-on: ubuntu-latest
-    needs: [build]  # Build bittikten sonra başlar
-    if: always() && needs.build.result == 'success'
+    # Build kapalıyken direkt deploy çalışsın
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || 'production' }}
       KUBECONFIG: /home/runner/.kube/config
