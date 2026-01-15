@@ -243,7 +243,7 @@ postgresql-auth:
   image:
   registry: docker.io
   repository: bitnami/postgresql
-  tag: 17.6.0-debian-12-r4
+  tag: 16.6.0
   digest: ""
   primary:
     persistence:
@@ -268,7 +268,7 @@ postgresql-product:
   image:
     registry: docker.io
     repository: bitnami/postgresql
-    tag: 17.6.0-debian-12-r4
+    tag: 16.6.0
     digest: ""
   primary:
     persistence:
