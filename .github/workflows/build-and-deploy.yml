@@ -361,6 +361,10 @@ jobs:
             --set loki.persistence.storageClassName=${{ steps.storage.outputs.name }} \
             --set promtail.enabled=true
 
+      - name: Apply Monitoring Ingress (VPN Only)
+        run: |
+          kubectl apply -f k8s/monitoring-ingress.yaml
+
       - name: Verify Required Secrets
         run: |
           echo "🔐 Gerekli secrets kontrol ediliyor..."

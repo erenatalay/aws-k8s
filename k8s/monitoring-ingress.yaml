@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-internal
+  namespace: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: grafana.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-internal
+  namespace: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: prometheus.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-prometheus
+                port:
+                  number: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-internal
+  namespace: logging
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: loki.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: loki
+                port:
+                  number: 3100
