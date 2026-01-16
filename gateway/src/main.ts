@@ -3,6 +3,83 @@ import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+const SENSITIVE_KEY_PATTERNS = [
+  'authorization',
+  'cookie',
+  'set-cookie',
+  'x-api-key',
+  'api-key',
+  'apikey',
+  'token',
+  'access_token',
+  'refresh_token',
+  'password',
+  'pass',
+  'secret',
+  'session',
+  'jwt',
+];
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const isSensitiveKey = (key: string) =>
+  SENSITIVE_KEY_PATTERNS.some((pattern) => key.toLowerCase().includes(pattern));
+
+const redactValue = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return value.map((entry) => redactValue(entry));
+  }
+  if (isPlainObject(value)) {
+    return Object.entries(value).reduce<Record<string, unknown>>(
+      (acc, [key, entry]) => {
+        acc[key] = isSensitiveKey(key) ? '[REDACTED]' : redactValue(entry);
+        return acc;
+      },
+      {},
+    );
+  }
+  return value;
+};
+
+const normalizeBody = (body: unknown, contentType?: string): unknown => {
+  if (body === undefined) return undefined;
+  if (Buffer.isBuffer(body)) return body.toString('utf8');
+  if (typeof body === 'string') {
+    if (contentType?.includes('application/json')) {
+      try {
+        return redactValue(JSON.parse(body));
+      } catch {
+        return body;
+      }
+    }
+    return body;
+  }
+  return redactValue(body);
+};
+
+const normalizeHeaders = (headers: Record<string, unknown>) => {
+  const cleaned = Object.entries(headers).reduce<Record<string, unknown>>(
+    (acc, [key, value]) => {
+      if (value !== undefined) acc[key] = value;
+      return acc;
+    },
+    {},
+  );
+  return redactValue(cleaned);
+};
+
+const safeStringify = (value: unknown) => {
+  const seen = new WeakSet();
+  return JSON.stringify(value, (key, val) => {
+    if (typeof val === 'object' && val !== null) {
+      if (seen.has(val)) return '[CIRCULAR]';
+      seen.add(val);
+    }
+    return val;
+  });
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -17,11 +94,50 @@ async function bootstrap() {
     res.setHeader('x-request-id', requestId);
 
     const startedAt = process.hrtime.bigint();
+    const requestHeaders = normalizeHeaders(
+      req.headers as Record<string, unknown>,
+    );
+    const requestBody = normalizeBody(req.body, req.headers['content-type']);
+    const originalSend = res.send.bind(res);
+    const originalJson = res.json.bind(res);
+    let responseBody: unknown;
+
+    res.send = (body: unknown) => {
+      responseBody = body;
+      return originalSend(body);
+    };
+    res.json = (body: unknown) => {
+      responseBody = body;
+      return originalJson(body);
+    };
+
     res.on('finish', () => {
       const durationMs =
         Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      const responseHeaders = normalizeHeaders(
+        res.getHeaders() as Record<string, unknown>,
+      );
+      const responseBodyNormalized = normalizeBody(
+        responseBody,
+        res.getHeader('content-type')?.toString(),
+      );
       Logger.log(
-        `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs.toFixed(1)}ms`,
+        safeStringify({
+          service: 'gateway',
+          requestId,
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: res.statusCode,
+          durationMs: Number(durationMs.toFixed(1)),
+          request: {
+            headers: requestHeaders,
+            body: requestBody,
+          },
+          response: {
+            headers: responseHeaders,
+            body: responseBodyNormalized,
+          },
+        }),
       );
     });
 
