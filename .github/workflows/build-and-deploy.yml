@@ -283,7 +283,7 @@ jobs:
             --namespace ingress-nginx \
             --create-namespace \
             --set controller.service.type=NodePort \
-            --set controller.service.externalTrafficPolicy=Local \
+            --set controller.service.externalTrafficPolicy=Cluster \
             --set controller.service.nodePorts.http=30080 \
             --set controller.service.nodePorts.https=30443 \
             --set controller.config.keep-alive=75 \
@@ -341,8 +341,10 @@ jobs:
             --set grafana.additionalDataSources[0].name=Loki \
             --set grafana.additionalDataSources[0].type=loki \
             --set grafana.additionalDataSources[0].access=proxy \
-            --set grafana.additionalDataSources[0].url=http://loki.logging:3100 \
+            --set grafana.additionalDataSources[0].url=http://loki.logging.svc.cluster.local:3100 \
             --set grafana.additionalDataSources[0].isDefault=false \
+            --set grafana.additionalDataSources[0].uid=loki \
+            --set grafana.additionalDataSources[0].version=2 \
             --set prometheus.prometheusSpec.retention=15d \
             --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName=${{ steps.storage.outputs.name }} \
             --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage=20Gi \
